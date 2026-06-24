@@ -389,7 +389,7 @@ describe("renderer low-power idle mode", () => {
     );
   });
 
-  it("serializes different wake ids while an object reload is in flight", () => {
+  it("replays only the latest wake id after an object reload finishes", () => {
     const harness = createRendererHarness();
     attachFakeSvgDocument(harness.clawd, { withEyes: true });
     harness.api.setCurrentState("idle");
@@ -400,15 +400,26 @@ describe("renderer low-power idle mode", () => {
     const firstSwapToken = harness.api.activeSwapToken;
 
     harness.electronHandlers.onSystemWake({ id: "wake-second", trigger: "unlock-screen", attempt: 0 });
+    harness.electronHandlers.onSystemWake({ id: "wake-third", trigger: "resume", attempt: 0 });
     assert.strictEqual(harness.api.pendingNext, firstObject);
     assert.equal(harness.api.activeSwapToken, firstSwapToken);
 
     attachFakeSvgDocument(firstObject, { withEyes: true });
     firstObject.listeners.get("load")();
-    harness.electronHandlers.onSystemWake({ id: "wake-second", trigger: "unlock-screen", attempt: 1 });
+    const replayTimer = harness.activeTimers().find((timer) => timer.ms === 0);
+    assert.ok(replayTimer, "latest queued wake should be replayed after cleanup");
+    replayTimer.callback();
 
     assert.notStrictEqual(harness.api.pendingNext, firstObject);
     assert.equal(harness.api.activeSwapToken, firstSwapToken + 1);
+    const replayObject = harness.api.pendingNext;
+    attachFakeSvgDocument(replayObject, { withEyes: true });
+    replayObject.listeners.get("load")();
+
+    const reportedIds = harness.electronCalls
+      .filter((call) => call.name === "reportSystemWakeStatus")
+      .map((call) => call.args[0].id);
+    assert.deepEqual(reportedIds, ["wake-first", "wake-third"]);
   });
 
   it("settles an in-flight wake when a state change supersedes its object reload", () => {

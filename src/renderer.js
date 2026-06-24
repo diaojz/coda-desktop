@@ -19,6 +19,8 @@ let lowPowerSvgPaused = false;
 let lastSystemWakeId = null;
 let lastSystemWakeStatus = null;
 let pendingSystemWakeId = null;
+let queuedSystemWakePayload = null;
+let queuedSystemWakeReplayTimer = null;
 let _lowPowerStaticImageOverrides = {};
 
 // ── Theme config (injected via preload.js additionalArguments) ──
@@ -1364,6 +1366,14 @@ function finishSystemWake(status) {
   lastSystemWakeId = status.id;
   lastSystemWakeStatus = status;
   reportSystemWakeStatus(status);
+  if (queuedSystemWakePayload && !queuedSystemWakeReplayTimer) {
+    queuedSystemWakeReplayTimer = setTimeout(() => {
+      queuedSystemWakeReplayTimer = null;
+      const payload = queuedSystemWakePayload;
+      queuedSystemWakePayload = null;
+      if (payload) recoverFromSystemWake(payload);
+    }, 0);
+  }
 }
 
 function recoverFromSystemWake(payload) {
@@ -1373,7 +1383,10 @@ function recoverFromSystemWake(payload) {
     reportSystemWakeStatus(lastSystemWakeStatus);
     return;
   }
-  if (pendingSystemWakeId) return;
+  if (pendingSystemWakeId || queuedSystemWakeReplayTimer) {
+    if (id !== pendingSystemWakeId) queuedSystemWakePayload = payload;
+    return;
+  }
 
   const rootBefore = getCurrentSvgRoot();
   const lowPowerWasPaused = lowPowerSvgPaused || hasLowPowerPauseStyle(rootBefore);
