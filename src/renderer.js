@@ -16,6 +16,8 @@ const CLOUDLING_POINTER_BRIDGE_STATES = new Set(["idle", "mini-idle", "mini-peek
 let lowPowerIdleMode = false;
 let lowPowerIdlePauseTimer = null;
 let lowPowerSvgPaused = false;
+let lastSystemWakeId = null;
+let lastSystemWakeStatus = null;
 let _lowPowerStaticImageOverrides = {};
 
 // ── Theme config (injected via preload.js additionalArguments) ──
@@ -236,6 +238,16 @@ function resumeCurrentSvgForLowPower() {
   }
   setCurrentScriptedSvgLowPowerPaused(false);
   setLowPowerSvgPaused(false);
+}
+
+function hasLowPowerPauseStyle(root = getCurrentSvgRoot()) {
+  if (!root) return false;
+  try {
+    const svgDoc = root.ownerDocument;
+    return !!(svgDoc && svgDoc.getElementById(LOW_POWER_PAUSE_STYLE_ID));
+  } catch {
+    return false;
+  }
 }
 
 function scheduleLowPowerIdlePause() {
@@ -1299,6 +1311,52 @@ function detachEyeTracking() {
   _cleanupLayeredTracking();
 }
 
+function isEyeTrackingReady() {
+  if (_trackingLayers && _layeredTrackingObj === clawdEl && clawdEl && clawdEl.isConnected) {
+    return true;
+  }
+  return !!(eyeTarget && eyeTarget.ownerDocument && eyeTarget.ownerDocument.defaultView);
+}
+
+function reportSystemWakeStatus(status) {
+  if (window.electronAPI && typeof window.electronAPI.reportSystemWakeStatus === "function") {
+    window.electronAPI.reportSystemWakeStatus(status);
+  }
+}
+
+function recoverFromSystemWake(payload) {
+  const id = payload && typeof payload.id === "string" ? payload.id : "";
+  if (!id || id.length > 96) return;
+  if (id === lastSystemWakeId && lastSystemWakeStatus) {
+    reportSystemWakeStatus(lastSystemWakeStatus);
+    return;
+  }
+
+  const rootBefore = getCurrentSvgRoot();
+  const lowPowerWasPaused = lowPowerSvgPaused || hasLowPowerPauseStyle(rootBefore);
+
+  // Do this even when the local mirror says false: the injected pause style or
+  // the embedded SVG timeline can outlive that boolean across a system sleep.
+  resumeCurrentSvgForLowPower();
+  if (lowPowerIdleMode) scheduleLowPowerIdlePause();
+
+  const needsEyes = needsEyeTracking(currentState);
+  if (needsEyes && !isEyeTrackingReady() && clawdEl && clawdEl.tagName === "OBJECT") {
+    attachEyeTracking(clawdEl);
+  }
+
+  const status = {
+    id,
+    result: rootBefore ? "resumed" : "no-svg",
+    lowPowerWasPaused,
+    pauseStyleRemoved: !hasLowPowerPauseStyle(),
+    eyeTrackingReady: !needsEyes || isEyeTrackingReady(),
+  };
+  lastSystemWakeId = id;
+  lastSystemWakeStatus = status;
+  reportSystemWakeStatus(status);
+}
+
 window.electronAPI.onEyeMove((dx, dy) => {
   const effectiveDx = miniLeftFlip ? -dx : dx;
   lastEyeDx = effectiveDx;
@@ -1328,6 +1386,10 @@ window.electronAPI.onEyeMove((dx, dy) => {
   }
   applyEyeMove(effectiveDx, dy);
 });
+
+if (window.electronAPI && typeof window.electronAPI.onSystemWake === "function") {
+  window.electronAPI.onSystemWake(recoverFromSystemWake);
+}
 
 if (window.electronAPI && typeof window.electronAPI.onCloudlingPointer === "function") {
   window.electronAPI.onCloudlingPointer((payload) => {

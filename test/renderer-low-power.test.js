@@ -89,6 +89,7 @@ class FakeElement {
 function createRendererHarness(options = {}) {
   const timers = [];
   const audioInstances = [];
+  const electronCalls = [];
   const electronHandlers = {};
   const container = new FakeElement("div");
   container.id = "pet-container";
@@ -115,7 +116,7 @@ function createRendererHarness(options = {}) {
       if (name.startsWith("on")) {
         return (callback) => { electronHandlers[name] = callback; };
       }
-      return () => {};
+      return (...args) => { electronCalls.push({ name, args }); };
     },
   });
   const context = {
@@ -162,11 +163,17 @@ function createRendererHarness(options = {}) {
   const source = `${readNormalized(RENDERER)}
 globalThis.__rendererTest = {
   swapToFile,
+  pauseCurrentSvgForLowPower,
+  recoverFromSystemWake,
+  setLowPowerIdleMode,
+  setCurrentState(value) { currentState = value; },
   getPetMediaElements,
   get pendingNext() { return pendingNext; },
   get pendingSvgFile() { return pendingSvgFile; },
   get activeSwapToken() { return activeSwapToken; },
   get clawdEl() { return clawdEl; },
+  get lowPowerSvgPaused() { return lowPowerSvgPaused; },
+  get eyeTarget() { return eyeTarget; },
 };`;
   vm.runInNewContext(source, context);
 
@@ -176,10 +183,42 @@ globalThis.__rendererTest = {
     clawd,
     timers,
     audioInstances,
+    electronCalls,
     electronHandlers,
     api: context.__rendererTest,
     activeTimers: () => timers.filter((timer) => !timer.cleared),
   };
+}
+
+function attachFakeSvgDocument(objectEl, { withEyes = false } = {}) {
+  const root = new FakeElement("svg");
+  const elements = new Map();
+  const svgDoc = {
+    defaultView: {},
+    documentElement: root,
+    createElementNS(_namespace, tagName) {
+      const element = new FakeElement(tagName);
+      element.ownerDocument = svgDoc;
+      return element;
+    },
+    getElementById(id) {
+      if (elements.has(id)) return elements.get(id);
+      return root.children.find((child) => child.id === id) || null;
+    },
+  };
+  root.ownerDocument = svgDoc;
+  root.pauseCalls = 0;
+  root.unpauseCalls = 0;
+  root.pauseAnimations = () => { root.pauseCalls++; };
+  root.unpauseAnimations = () => { root.unpauseCalls++; };
+  if (withEyes) {
+    const eyes = new FakeElement("g");
+    eyes.id = "eyes-js";
+    eyes.ownerDocument = svgDoc;
+    elements.set("eyes-js", eyes);
+  }
+  objectEl.contentDocument = svgDoc;
+  return { root, svgDoc, elements };
 }
 
 describe("renderer low-power idle mode", () => {
@@ -254,6 +293,73 @@ describe("renderer low-power idle mode", () => {
     assert.ok(source.includes('win.webContents.on("did-start-loading", () => {'));
     assert.ok(source.includes('win.webContents.on("render-process-gone", (_event, details) => {'));
     assert.ok(source.includes("setLowPowerIdlePaused(false);"));
+  });
+
+  it("unpauses the current SVG and reattaches eye tracking after system wake", () => {
+    const harness = createRendererHarness();
+    const svg = attachFakeSvgDocument(harness.clawd, { withEyes: true });
+    const scriptedPauseCalls = [];
+    harness.clawd.contentWindow.__clawdSetLowPowerPaused = (paused) => scriptedPauseCalls.push(paused);
+    harness.api.setCurrentState("idle");
+    harness.api.setLowPowerIdleMode(true);
+    harness.api.pauseCurrentSvgForLowPower();
+
+    assert.equal(harness.api.lowPowerSvgPaused, true);
+    assert.ok(svg.svgDoc.getElementById("clawd-low-power-pause-svg"));
+
+    harness.electronHandlers.onSystemWake({ id: "wake-test-1", trigger: "resume", attempt: 0 });
+
+    assert.equal(harness.api.lowPowerSvgPaused, false);
+    assert.equal(svg.svgDoc.getElementById("clawd-low-power-pause-svg"), null);
+    assert.equal(svg.root.unpauseCalls, 1);
+    assert.deepEqual(scriptedPauseCalls, [true, false]);
+    assert.ok(harness.api.eyeTarget);
+    const report = harness.electronCalls.find((call) => call.name === "reportSystemWakeStatus");
+    assert.deepEqual(report.args[0], {
+      id: "wake-test-1",
+      result: "resumed",
+      lowPowerWasPaused: true,
+      pauseStyleRemoved: true,
+      eyeTrackingReady: true,
+    });
+  });
+
+  it("removes a residual pause style even when the renderer mirror is already false", () => {
+    const harness = createRendererHarness();
+    const svg = attachFakeSvgDocument(harness.clawd);
+    const style = svg.svgDoc.createElementNS("http://www.w3.org/2000/svg", "style");
+    style.id = "clawd-low-power-pause-svg";
+    svg.root.appendChild(style);
+
+    assert.equal(harness.api.lowPowerSvgPaused, false);
+    harness.electronHandlers.onSystemWake({ id: "wake-test-2", trigger: "resume", attempt: 0 });
+
+    assert.equal(svg.svgDoc.getElementById("clawd-low-power-pause-svg"), null);
+    assert.equal(svg.root.unpauseCalls, 1);
+    const report = harness.electronCalls.find((call) => call.name === "reportSystemWakeStatus");
+    assert.equal(report.args[0].lowPowerWasPaused, true);
+    assert.equal(report.args[0].pauseStyleRemoved, true);
+  });
+
+  it("replies to duplicate wake ids without running recovery twice", () => {
+    const harness = createRendererHarness();
+    const svg = attachFakeSvgDocument(harness.clawd);
+    const payload = { id: "wake-test-3", trigger: "resume", attempt: 0 };
+
+    harness.electronHandlers.onSystemWake(payload);
+    harness.electronHandlers.onSystemWake({ ...payload, attempt: 1 });
+
+    assert.equal(svg.root.unpauseCalls, 1);
+    assert.equal(
+      harness.electronCalls.filter((call) => call.name === "reportSystemWakeStatus").length,
+      2
+    );
+  });
+
+  it("exposes the bounded wake IPC bridge through preload", () => {
+    const preload = readNormalized(PRELOAD);
+    assert.ok(preload.includes('onSystemWake: (cb) => ipcRenderer.on("system-wake"'));
+    assert.ok(preload.includes('reportSystemWakeStatus: (payload) => ipcRenderer.send("system-wake-status", payload)'));
   });
 });
 
