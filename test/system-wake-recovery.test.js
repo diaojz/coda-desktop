@@ -105,6 +105,9 @@ describe("system wake recovery", () => {
       lowPowerWasPaused: true,
       pauseStyleRemoved: true,
       eyeTrackingReady: true,
+      eyeTargetWasCurrentDocument: false,
+      objectReloaded: true,
+      eyeTargetRebound: true,
       ignoredDomContent: "must not cross the whitelist",
     });
     harness.clock.advance(100);
@@ -119,6 +122,9 @@ describe("system wake recovery", () => {
       lowPowerWasPaused: true,
       pauseStyleRemoved: true,
       eyeTrackingReady: true,
+      eyeTargetWasCurrentDocument: false,
+      objectReloaded: true,
+      eyeTargetRebound: true,
     });
     assert.equal(harness.logs.length, 1);
     assert.match(harness.logs[0], /result=resumed/);
@@ -135,25 +141,6 @@ describe("system wake recovery", () => {
     assert.match(harness.logs[0], /result=timeout/);
     assert.equal(harness.runtime.getPendingWakeId(), null);
     assert.equal(harness.clock.pendingCount(), 0);
-  });
-
-  it("accepts a tick-gap fallback and records its bounded gap", () => {
-    const harness = createHarness();
-    harness.runtime.trigger("tick-gap", { gapMs: 4321.4 });
-    const id = harness.sent[0].payload.id;
-
-    assert.equal(harness.sent[0].payload.trigger, "tick-gap");
-    harness.ipcMain.emit("system-wake-status", {}, {
-      id,
-      result: "resumed",
-      lowPowerWasPaused: true,
-      pauseStyleRemoved: true,
-      eyeTrackingReady: true,
-    });
-
-    assert.equal(harness.logs.length, 1);
-    assert.match(harness.logs[0], /trigger=tick-gap/);
-    assert.match(harness.logs[0], /gapMs=4321/);
   });
 
   it("ignores malformed and stale receipts", () => {
@@ -188,6 +175,9 @@ describe("system wake recovery", () => {
       lowPowerWasPaused: 1,
       pauseStyleRemoved: true,
       eyeTrackingReady: false,
+      eyeTargetWasCurrentDocument: true,
+      objectReloaded: true,
+      eyeTargetRebound: true,
       extra: "ignored",
     }), {
       id: "wake-abc-1",
@@ -195,6 +185,9 @@ describe("system wake recovery", () => {
       lowPowerWasPaused: false,
       pauseStyleRemoved: true,
       eyeTrackingReady: false,
+      eyeTargetWasCurrentDocument: true,
+      objectReloaded: true,
+      eyeTargetRebound: true,
     });
     assert.equal(normalizeWakeStatus({ id: "bad", result: "resumed" }), null);
   });

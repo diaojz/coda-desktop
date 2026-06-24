@@ -165,8 +165,15 @@ globalThis.__rendererTest = {
   swapToFile,
   pauseCurrentSvgForLowPower,
   recoverFromSystemWake,
+  attachEyeTracking,
+  isEyeTrackingReady,
   setLowPowerIdleMode,
   setCurrentState(value) { currentState = value; },
+  setLayeredTrackingForTest(document) {
+    _trackingLayers = { test: { wrappers: [], maxOffset: 1, ease: 1, x: 0, y: 0 } };
+    _layeredTrackingObj = clawdEl;
+    _layeredTrackingDocument = document;
+  },
   getPetMediaElements,
   get pendingNext() { return pendingNext; },
   get pendingSvgFile() { return pendingSvgFile; },
@@ -308,6 +315,10 @@ describe("renderer low-power idle mode", () => {
     assert.ok(svg.svgDoc.getElementById("clawd-low-power-pause-svg"));
 
     harness.electronHandlers.onSystemWake({ id: "wake-test-1", trigger: "resume", attempt: 0 });
+    const replacementObject = harness.api.pendingNext;
+    assert.ok(replacementObject);
+    attachFakeSvgDocument(replacementObject, { withEyes: true });
+    replacementObject.listeners.get("load")();
 
     assert.equal(harness.api.lowPowerSvgPaused, false);
     assert.equal(svg.svgDoc.getElementById("clawd-low-power-pause-svg"), null);
@@ -321,6 +332,9 @@ describe("renderer low-power idle mode", () => {
       lowPowerWasPaused: true,
       pauseStyleRemoved: true,
       eyeTrackingReady: true,
+      eyeTargetWasCurrentDocument: false,
+      objectReloaded: true,
+      eyeTargetRebound: true,
     });
   });
 
@@ -343,17 +357,155 @@ describe("renderer low-power idle mode", () => {
 
   it("replies to duplicate wake ids without running recovery twice", () => {
     const harness = createRendererHarness();
-    const svg = attachFakeSvgDocument(harness.clawd);
+    const svg = attachFakeSvgDocument(harness.clawd, { withEyes: true });
     const payload = { id: "wake-test-3", trigger: "resume", attempt: 0 };
+    harness.api.setCurrentState("idle");
+    harness.api.setLowPowerIdleMode(true);
 
     harness.electronHandlers.onSystemWake(payload);
+    const replacementObject = harness.api.pendingNext;
+    const swapToken = harness.api.activeSwapToken;
     harness.electronHandlers.onSystemWake({ ...payload, attempt: 1 });
 
     assert.equal(svg.root.unpauseCalls, 1);
+    assert.strictEqual(harness.api.pendingNext, replacementObject);
+    assert.equal(harness.api.activeSwapToken, swapToken);
+    assert.equal(
+      harness.electronCalls.filter((call) => call.name === "reportSystemWakeStatus").length,
+      0
+    );
+
+    attachFakeSvgDocument(replacementObject, { withEyes: true });
+    replacementObject.listeners.get("load")();
+    harness.electronHandlers.onSystemWake({ ...payload, attempt: 2 });
     assert.equal(
       harness.electronCalls.filter((call) => call.name === "reportSystemWakeStatus").length,
       2
     );
+  });
+
+  it("serializes different wake ids while an object reload is in flight", () => {
+    const harness = createRendererHarness();
+    attachFakeSvgDocument(harness.clawd, { withEyes: true });
+    harness.api.setCurrentState("idle");
+    harness.api.setLowPowerIdleMode(true);
+
+    harness.electronHandlers.onSystemWake({ id: "wake-first", trigger: "resume", attempt: 0 });
+    const firstObject = harness.api.pendingNext;
+    const firstSwapToken = harness.api.activeSwapToken;
+
+    harness.electronHandlers.onSystemWake({ id: "wake-second", trigger: "unlock-screen", attempt: 0 });
+    assert.strictEqual(harness.api.pendingNext, firstObject);
+    assert.equal(harness.api.activeSwapToken, firstSwapToken);
+
+    attachFakeSvgDocument(firstObject, { withEyes: true });
+    firstObject.listeners.get("load")();
+    harness.electronHandlers.onSystemWake({ id: "wake-second", trigger: "unlock-screen", attempt: 1 });
+
+    assert.notStrictEqual(harness.api.pendingNext, firstObject);
+    assert.equal(harness.api.activeSwapToken, firstSwapToken + 1);
+  });
+
+  it("rebuilds a stale eye-tracking object whose old document still looks alive", () => {
+    const harness = createRendererHarness();
+    const originalSvg = attachFakeSvgDocument(harness.clawd, { withEyes: true });
+    harness.api.setCurrentState("idle");
+    harness.api.setLowPowerIdleMode(true);
+    harness.api.attachEyeTracking(harness.clawd);
+    assert.strictEqual(harness.api.eyeTarget.ownerDocument, originalSvg.svgDoc);
+
+    const replacementDocument = attachFakeSvgDocument(harness.clawd, { withEyes: true });
+    assert.notStrictEqual(harness.api.eyeTarget.ownerDocument, replacementDocument.svgDoc);
+    assert.ok(harness.api.eyeTarget.ownerDocument.defaultView, "old document still passes the legacy ready check");
+
+    harness.electronHandlers.onSystemWake({ id: "wake-stale-2", trigger: "resume", attempt: 0 });
+    const replacementObject = harness.api.pendingNext;
+    assert.ok(replacementObject, "wake should start a fresh object-channel swap");
+    assert.equal(replacementObject.tagName, "OBJECT");
+    assert.match(replacementObject.data, /[?&]_t=\d+-\d+$/);
+
+    const freshSvg = attachFakeSvgDocument(replacementObject, { withEyes: true });
+    replacementObject.listeners.get("load")();
+
+    assert.strictEqual(harness.api.clawdEl, replacementObject);
+    assert.strictEqual(harness.api.eyeTarget.ownerDocument, freshSvg.svgDoc);
+    const report = harness.electronCalls.find((call) => call.name === "reportSystemWakeStatus");
+    assert.equal(report.args[0].eyeTargetWasCurrentDocument, false);
+    assert.equal(report.args[0].objectReloaded, true);
+    assert.equal(report.args[0].eyeTargetRebound, true);
+  });
+
+  it("keeps the old object and reports an error when the wake reload cannot load", () => {
+    const harness = createRendererHarness();
+    attachFakeSvgDocument(harness.clawd, { withEyes: true });
+    harness.api.setCurrentState("idle");
+    harness.api.setLowPowerIdleMode(true);
+
+    harness.electronHandlers.onSystemWake({ id: "wake-fail-1", trigger: "resume", attempt: 0 });
+    const failedObject = harness.api.pendingNext;
+    const loadTimeout = harness.activeTimers().find((timer) => timer.ms === 3000 && !timer.cleared);
+    loadTimeout.callback();
+
+    assert.strictEqual(harness.api.clawdEl, harness.clawd);
+    assert.equal(harness.api.pendingNext, null);
+    assert.equal(harness.container.children.some((element) => element.tagName === "IMG"), false);
+    const report = harness.electronCalls.find((call) => call.name === "reportSystemWakeStatus");
+    assert.equal(report.args[0].result, "error");
+    assert.equal(report.args[0].objectReloaded, false);
+    assert.equal(report.args[0].eyeTrackingReady, true);
+    assert.strictEqual(harness.api.eyeTarget.ownerDocument, harness.clawd.contentDocument);
+    assert.equal(failedObject.isConnected, false);
+  });
+
+  it("does not rebuild an eye object when low-power mode is disabled", () => {
+    const harness = createRendererHarness();
+    attachFakeSvgDocument(harness.clawd, { withEyes: true });
+    harness.api.setCurrentState("idle");
+    harness.api.attachEyeTracking(harness.clawd);
+
+    harness.electronHandlers.onSystemWake({ id: "wake-disabled-1", trigger: "resume", attempt: 0 });
+
+    assert.equal(harness.api.pendingNext, null);
+    const report = harness.electronCalls.find((call) => call.name === "reportSystemWakeStatus");
+    assert.equal(report.args[0].objectReloaded, false);
+    assert.equal(report.args[0].eyeTrackingReady, true);
+  });
+
+  it("does not rebuild the object for a non-eye state", () => {
+    const harness = createRendererHarness();
+    attachFakeSvgDocument(harness.clawd);
+    harness.api.setCurrentState("sleeping");
+    harness.api.setLowPowerIdleMode(true);
+
+    harness.electronHandlers.onSystemWake({ id: "wake-sleeping-1", trigger: "resume", attempt: 0 });
+
+    assert.equal(harness.api.pendingNext, null);
+    const report = harness.electronCalls.find((call) => call.name === "reportSystemWakeStatus");
+    assert.equal(report.args[0].objectReloaded, false);
+    assert.equal(report.args[0].eyeTrackingReady, true);
+  });
+
+  it("invalidates layered tracking when the object document changes", () => {
+    const harness = createRendererHarness();
+    const originalSvg = attachFakeSvgDocument(harness.clawd);
+    harness.api.setLayeredTrackingForTest(originalSvg.svgDoc);
+    assert.equal(harness.api.isEyeTrackingReady(), true);
+
+    attachFakeSvgDocument(harness.clawd);
+
+    assert.equal(harness.api.isEyeTrackingReady(), false);
+  });
+
+  it("reattaches a stale single eye target before applying the next eye move", () => {
+    const harness = createRendererHarness();
+    attachFakeSvgDocument(harness.clawd, { withEyes: true });
+    harness.api.attachEyeTracking(harness.clawd);
+    const replacementSvg = attachFakeSvgDocument(harness.clawd, { withEyes: true });
+
+    harness.electronHandlers.onEyeMove(2, -1);
+
+    assert.strictEqual(harness.api.eyeTarget.ownerDocument, replacementSvg.svgDoc);
+    assert.equal(harness.api.eyeTarget.getAttribute("transform"), "translate(2, -1)");
   });
 
   it("exposes the bounded wake IPC bridge through preload", () => {
