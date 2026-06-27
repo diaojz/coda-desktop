@@ -774,14 +774,44 @@ function toggleEditIndustry() {
 }
 
 function saveIndustry(val) {
-  _currentIndustry = val || _currentIndustry;
+  var newVal = (val || _currentIndustry || '').trim() || _currentIndustry;
+  var changed = newVal !== _currentIndustry;
+  _currentIndustry = newVal;
   var display = el('industry-display');
-  if (!display) return;
-  var span = document.createElement('span');
-  span.className = 'industry-name';
-  span.id = 'industry-display';
-  span.textContent = _currentIndustry;
-  if (display.parentNode) display.parentNode.replaceChild(span, display);
+  if (display) {
+    var span = document.createElement('span');
+    span.className = 'industry-name';
+    span.id = 'industry-display';
+    span.textContent = _currentIndustry;
+    if (display.parentNode) display.parentNode.replaceChild(span, display);
+  }
+  if (changed) persistProfileOverride();
+}
+
+// ── 把手改的画像持久化到评价 Agent（人设跟随：改一次，记一辈子）──
+function persistProfileOverride() {
+  var root = (el('root-input') && el('root-input').value || '').trim();
+  if (!root) return;
+  var port = (el('port-input') && el('port-input').value) || '8848';
+  var override = { industry: _currentIndustry };
+  // 行业改了，红线也跟着换成该行业的（让评价跟着走）——交给后端按行业补默认红线，
+  // 这里只传 industry；若将来支持手编红线，再带上 redlines。
+  fetch('http://127.0.0.1:' + port + '/profile/override', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ root: root, override: override, editedAt: new Date().toISOString() })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(d) {
+    if (d && d.ok) {
+      setStatus('✓ 画像已保存，下次扫这个目录就按「' + escHtml(_currentIndustry) + '」走', 'success');
+    } else {
+      setStatus('画像保存失败：' + ((d && d.error) || '未知错误'), 'error');
+    }
+  })
+  .catch(function() {
+    setStatus('画像保存失败：评价服务没连上', 'error');
+  });
 }
 
 // ── 渲染 ② 公共模块 ──
