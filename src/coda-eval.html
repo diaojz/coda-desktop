@@ -342,6 +342,43 @@ body {
   margin-right: 6px;
 }
 
+.reuse-hint {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fff1e6, #ffe4cf);
+  border: 1.5px solid var(--accent);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px -6px rgba(224, 98, 58, 0.4);
+}
+.reuse-hint-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.reuse-hint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.reuse-hint-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.reuse-hint-name {
+  font-weight: 700;
+  color: var(--text);
+}
+.reuse-hint-from {
+  font-size: 11px;
+  color: var(--sub);
+  background: rgba(255,255,255,0.6);
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
 .edit-profile-btn {
   background: var(--pill);
   border: 1.5px solid var(--border);
@@ -855,15 +892,34 @@ function persistProfileOverride() {
   });
 }
 
+// ── ③复用·跨项目提醒横幅（你做过类似的，有现成轮子）──
+function renderReuseHintHtml() {
+  var hint = _scanResult && _scanResult.reuseHint;
+  if (!hint || !hint.candidates || !hint.candidates.length) return '';
+  var html = '<div class="reuse-hint">'
+    + '<div class="reuse-hint-title">💡 ' + escHtml(hint.message || '你做过类似的项目，有现成轮子可用') + '</div>'
+    + '<div class="reuse-hint-list">';
+  hint.candidates.forEach(function(c) {
+    html += '<div class="reuse-hint-item">'
+      + '<span class="reuse-hint-name">' + escHtml(c.name || '') + '</span>'
+      + '<span class="reuse-hint-from">来自 ' + escHtml(c.fromProject || '') + '</span>'
+      + '</div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
 // ── 渲染 ② 公共模块 ──
 function renderReuse(reuse) {
+  var hintHtml = renderReuseHintHtml();
   var candidates = reuse && reuse.candidates;
   if (!candidates || !candidates.length) {
-    el('reuse-content').innerHTML = '<div class="placeholder">扫描后这里会列出可复用的公共模块</div>';
+    el('reuse-content').innerHTML = hintHtml
+      || '<div class="placeholder">扫描后这里会列出可复用的公共模块</div>';
     return;
   }
 
-  var html = '<div class="reuse-list">';
+  var html = hintHtml + '<div class="reuse-list">';
   candidates.forEach(function(item, idx) {
     var snippetId = 'snippet-' + idx;
     html += '<div class="reuse-item">'
