@@ -30,7 +30,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/icon.png" width="220" alt="小哒 Coda — 一只替你盯着 AI 编码 Agent 干活的桌面小精灵。">
+  <img src="assets/coda-demo.gif" width="420" alt="小哒 Coda — 一只替你盯着 AI 编码 Agent 干活的桌面小精灵。睡觉 → 待机 → 思考 → 报错 → 完成欢呼，跟着 Claude Code / Codex / Cursor 的实时状态变脸。">
 </p>
 
 **小哒 Coda** 蹲在你的桌面上，实时盯着 AI 编码 Agent 在做什么 —— 发起一个长任务，转身去忙别的，等小哒告诉你「干完了」再回来。
