@@ -85,6 +85,7 @@ module.exports = function initCodaEval(ctx) {
       title: typeof ctx.t === "function" ? ctx.t("codaEvalWindowTitle") : "小哒 Coda · 工作台",
       backgroundColor: getBackgroundColor(),
       webPreferences: {
+        preload: path.join(__dirname, "preload-coda-eval.js"),
         nodeIntegration: false,
         contextIsolation: true,
       },

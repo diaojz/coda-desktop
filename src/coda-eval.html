@@ -121,6 +121,22 @@ body {
   border-color: var(--accent);
 }
 
+.btn-pick {
+  padding: 9px 16px;
+  background: var(--card);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-pick:hover { background: #fff3ee; }
+.btn-pick:active { transform: scale(0.97); }
+
 .btn-scan {
   padding: 9px 20px;
   background: var(--accent);
@@ -133,6 +149,15 @@ body {
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
   white-space: nowrap;
+}
+
+/* 窄窗适配：扫描栏元素换行，输入框/按钮各占满 */
+@media (max-width: 560px) {
+  .scan-bar { gap: 8px; }
+  .scan-input { flex: 1 1 100%; min-width: 0; order: -1; }
+  .btn-pick { flex: 1 1 auto; }
+  .btn-scan { flex: 1 1 auto; }
+  .port-group { flex: 0 0 auto; }
 }
 
 .btn-scan:hover {
@@ -690,11 +715,12 @@ body {
 <div class="page-header">
   <div class="page-title">🐾 小哒 Coda · 工作台</div>
   <div class="scan-bar">
+    <button id="pick-btn" class="btn-pick" title="选择本地项目文件夹">📁 选文件夹</button>
     <input
       id="root-input"
       class="scan-input"
       type="text"
-      placeholder="粘贴一个本地项目目录，回车扫描"
+      placeholder="选文件夹，或粘贴一个本地项目目录后回车"
     />
     <div class="port-group">
       <span>端口</span>
@@ -1160,7 +1186,25 @@ window.codaScan = function(root, port) {
   doScan(root, p);
 };
 
+// ── 选文件夹（走 Electron 原生对话框；浏览器里无此能力则提示手动粘贴）──
+function pickFolder() {
+  if (window.codaEvalAPI && typeof window.codaEvalAPI.pickFolder === 'function') {
+    window.codaEvalAPI.pickFolder()
+      .then(function(dir) {
+        if (dir) {
+          el('root-input').value = dir;
+          doScan(dir, el('port-input').value);  // 选完直接扫，省一步
+        }
+      })
+      .catch(function() { setStatus('选文件夹失败，可手动粘贴目录路径', 'error'); });
+  } else {
+    setStatus('当前环境不支持选文件夹，请手动粘贴目录路径后按回车', 'error');
+    el('root-input').focus();
+  }
+}
+
 // ── 事件绑定 ──
+el('pick-btn').addEventListener('click', pickFolder);
 el('scan-btn').addEventListener('click', function() {
   doScan(el('root-input').value, el('port-input').value);
 });

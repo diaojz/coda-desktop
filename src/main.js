@@ -1886,6 +1886,17 @@ ipcMain.on("sound-playback-error", (_event, payload) => {
   sessionLog(`sound playback error phase=${phase || "unknown"} message=${message || "unknown"}`);
 });
 
+// 小哒工作台「选文件夹」：弹原生选目录框，返回绝对路径（取消返回 null）
+ipcMain.handle("coda-eval:pick-folder", async () => {
+  const parent = _codaEval && _codaEval.getWindow && _codaEval.getWindow();
+  const result = await electronDialog.showOpenDialog(
+    parent && !parent.isDestroyed() ? parent : undefined,
+    { title: translate("openCodaEval"), properties: ["openDirectory"] }
+  );
+  if (result.canceled || !result.filePaths.length) return null;
+  return result.filePaths[0];
+});
+
 function focusLog(msg) {
   if (!focusDebugLog) return;
   const { rotatedAppend } = require("./log-rotate");
