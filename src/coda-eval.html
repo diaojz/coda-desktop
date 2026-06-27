@@ -342,6 +342,27 @@ body {
   margin-right: 6px;
 }
 
+.persona-bar {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #0a1626, #13243f);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #f3ece0;
+  font-size: 13px;
+}
+.persona-icon { font-size: 16px; }
+.persona-headline { font-weight: 700; color: #e8a84a; }
+.persona-skills {
+  font-size: 12px;
+  color: #a9b7c9;
+  border-left: 1px solid rgba(255,255,255,.2);
+  padding-left: 10px;
+}
+
 .reuse-hint {
   margin-bottom: 14px;
   padding: 14px 16px;
@@ -682,6 +703,7 @@ body {
     <button id="scan-btn" class="btn-scan">扫描</button>
   </div>
   <div id="status-line" class="status-line"></div>
+  <div id="persona-bar" class="persona-bar" style="display:none"></div>
 </div>
 
 <!-- ── ① 人设与行业 ── -->
@@ -1050,6 +1072,28 @@ function toggleFileIssues(idx) {
   if (arrow) arrow.classList.toggle('open', !isOpen);
 }
 
+// ── ④人设跟随：拉取跨项目累积的人设摘要，显示在顶部 ──
+function loadPersona(port) {
+  port = port || '8848';
+  fetch('http://127.0.0.1:' + port + '/persona')
+    .then(function(res) { return res.json(); })
+    .then(function(d) {
+      var p = d && d.persona;
+      var bar = el('persona-bar');
+      if (!p || !p.projectsSeen) { bar.style.display = 'none'; return; }
+      var html = '<span class="persona-icon">🧠</span>'
+        + '<span class="persona-headline">' + escHtml(p.headline || '') + '</span>';
+      if (p.skills && p.skills.length) {
+        html += '<span class="persona-skills">能力库：'
+          + p.skills.slice(0, 4).map(escHtml).join('、')
+          + (p.skills.length > 4 ? ' 等 ' + p.skills.length + ' 项' : '') + '</span>';
+      }
+      bar.innerHTML = html;
+      bar.style.display = 'flex';
+    })
+    .catch(function() { /* 人设拉取失败不影响主流程 */ });
+}
+
 // ── 核心：执行扫描 ──
 function doScan(root, port) {
   if (!root || !root.trim()) {
@@ -1087,6 +1131,7 @@ function doScan(root, port) {
     renderProfile(data.profile || null);
     renderReuse(data.reuse || null);
     renderReviews(data.reviews || null);
+    loadPersona(port);
   })
   .catch(function(err) {
     var isNetErr = err instanceof TypeError;
