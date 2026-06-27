@@ -315,6 +315,33 @@ body {
   margin-top: 1px;
 }
 
+.stage-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fff6ee, #fdeee2);
+  border: 1px solid #f0d4c0;
+  border-radius: 12px;
+}
+.stage-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.stage-row {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 5px 0;
+}
+.stage-row b {
+  display: inline-block;
+  min-width: 52px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-right: 6px;
+}
+
 .edit-profile-btn {
   background: var(--pill);
   border: 1.5px solid var(--border);
@@ -745,7 +772,21 @@ function renderProfile(profile) {
     + evidenceHtml
     + metaHtml
     + redlinesHtml
+    + renderStageHtml()
     + '<button class="edit-profile-btn" onclick="toggleEditIndustry()">编辑画像</button>';
+}
+
+// ── ②解释：用行业语言讲「现在这个项目在干什么阶段」──
+function renderStageHtml() {
+  var stage = _scanResult && _scanResult.stage;
+  if (!stage || (!stage.stage && !stage.analogy)) return '';
+  var html = '<div class="stage-box">'
+    + '<div class="stage-title">📖 现在在干什么（用你那行的话讲）</div>';
+  if (stage.stage)   html += '<div class="stage-row"><b>阶段</b>' + escHtml(stage.stage) + '</div>';
+  if (stage.analogy) html += '<div class="stage-row"><b>相当于</b>' + escHtml(stage.analogy) + '</div>';
+  if (stage.next)    html += '<div class="stage-row"><b>下一步</b>' + escHtml(stage.next) + '</div>';
+  html += '</div>';
+  return html;
 }
 
 // ── 编辑行业名（最简实现，不持久化） ──
