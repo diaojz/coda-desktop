@@ -1,7 +1,13 @@
 <p align="center">
-  <img src="assets/tray-icon.png" width="128" alt="Clawd">
+  <img src="assets/icon.png" width="128" alt="Coda">
 </p>
-<h1 align="center">Clawd on Desk</h1>
+<h1 align="center">小哒 Coda</h1>
+<p align="center">
+  <sub>Watches your AI coding agents through to the finish — so you don't have to.</sub>
+</p>
+<p align="center">
+  <sub>基于 <a href="https://github.com/rullerzhou-afk/clawd-on-desk">clawd-on-desk</a> 二次开发 · 回车键队</sub>
+</p>
 <p align="center">
   <a href="README.zh-CN.md">中文版</a>
   ·
@@ -24,12 +30,12 @@
 </p>
 
 <p align="center">
-  <img src="assets/hero.gif" alt="Clawd on Desk — a pixel desktop pet that reacts to your AI coding agent in real time. Animated demo: the crab cycles through sleeping, thinking while the model reads the codebase, typing as edit/bash tools run, grooving for one subagent, juggling when multiple subagents run, raising a permission bubble, and celebrating when 14 files / 312 tests are complete. Works with Claude Code, Codex, Cursor, Copilot, Gemini, Antigravity, Qwen, CodeWhale, Pi, OpenClaw and more.">
+  <img src="assets/icon.png" width="220" alt="小哒 Coda — 一只替你盯着 AI 编码 Agent 干活的桌面小精灵。">
 </p>
 
-Clawd lives on your desktop and reacts to what your AI coding agent is doing — in real time. Start a long task, walk away, come back when the crab tells you it's done.
+**小哒 Coda** 蹲在你的桌面上，实时盯着 AI 编码 Agent 在做什么 —— 发起一个长任务，转身去忙别的，等小哒告诉你「干完了」再回来。
 
-Thinking when you prompt, typing when tools run, grooving or juggling for subagents, reviewing permissions, celebrating when tasks complete, sleeping when you step away. Ships with three built-in themes: **Clawd** (pixel crab), **Calico** (三花猫), and **Cloudling** (云宝), with full support for custom themes and imported Codex Pet animation packs.
+你提问时它思考，工具运行时它专注干活，子任务跑起来它欢呼，需要审批权限时它提醒你，任务完成时它庆祝，你离开时它打盹睡觉。内置主题 **Coda**（小哒，暖橙 3D 小精灵，默认）、**Clawd**（像素螃蟹）、**Calico**（三花猫）、**Cloudling**（云宝），并完整支持自定义主题与导入的 Codex Pet 动画包。
 
 > Supports Windows 11, macOS, and Ubuntu/Linux. Windows releases provide separate x64 and ARM64 installers. Source builds require Node.js. Works with **Claude Code**, **Codex CLI**, **Copilot CLI**, **Gemini CLI**, **Antigravity CLI (agy)**, **Cursor Agent**, **CodeBuddy**, **Kiro CLI**, **Kimi Code CLI (Kimi-CLI)**, **Qwen Code**, **CodeWhale**, **opencode**, **Pi**, **OpenClaw**, **Hermes Agent**, **Qoder**, and **Reasonix CLI**.
 

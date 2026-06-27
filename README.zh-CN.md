@@ -1,7 +1,13 @@
 <p align="center">
-  <img src="assets/tray-icon.png" width="128" alt="Clawd">
+  <img src="assets/icon.png" width="128" alt="Coda">
 </p>
-<h1 align="center">Clawd 桌宠</h1>
+<h1 align="center">小哒 Coda 桌宠</h1>
+<p align="center">
+  <sub>替你把 AI 写的活儿盯到收尾的桌面小精灵。</sub>
+</p>
+<p align="center">
+  <sub>基于 <a href="https://github.com/rullerzhou-afk/clawd-on-desk">clawd-on-desk</a> 二次开发 · 回车键队</sub>
+</p>
 <p align="center">
   <a href="README.md">English</a>
   ·
