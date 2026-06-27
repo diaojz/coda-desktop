@@ -62,7 +62,7 @@ npm start
 
 ## 🙏 致谢
 
-本项目基于开源项目 [clawd-on-desk](https://github.com/rullerzhou-afk/clawd-on-desk)（作者 Ruller_Lulu / 鹿鹿）二次开发。小哒 Coda 的形象与命名为「回车键队」原创。
+本项目基于开源项目 [clawd-on-desk](https://github.com/rullerzhou-afk/clawd-on-desk)（作者 Ruller_Lulu / 鹿鹿）二次开发。小哒 Coda 的形象与命名由「小宿科技全球黑客松 · 北京站」参赛队伍「回车键」原创。
 
 ---
 
@@ -72,6 +72,6 @@ npm start
 
 **艺术资源与主题素材（包括 `assets/` 和 `themes/*/assets/`）不在 AGPL-3.0 覆盖范围内**，版权归各自所有者所有：
 
-- **小哒 Coda** 形象由「回车键队」原创。
+- **小哒 Coda** 形象由「小宿科技全球黑客松 · 北京站」参赛队伍「回车键」原创。
 - 原项目 **Clawd** 角色属于 [Anthropic](https://www.anthropic.com)，**Calico（三花猫）** 与 **Cloudling（云宝）** 艺术资源由鹿鹿（[@rullerzhou-afk](https://github.com/rullerzhou-afk)）创作，版权归原作者所有。
 - 本项目为非官方粉丝项目，与 Anthropic、OpenAI 无关联，也未获其背书。
