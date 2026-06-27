@@ -203,6 +203,12 @@ module.exports = function initMenu(ctx) {
           if (typeof ctx.openDashboard === "function") ctx.openDashboard();
         },
       },
+      {
+        label: t("openCodaEval"),
+        click: () => {
+          if (typeof ctx.openCodaEval === "function") ctx.openCodaEval();
+        },
+      },
       buildAutoApproveMenuItem(),
     ];
 
@@ -414,6 +420,12 @@ module.exports = function initMenu(ctx) {
         label: t("openDashboard"),
         click: () => {
           if (typeof ctx.openDashboard === "function") ctx.openDashboard();
+        },
+      },
+      {
+        label: t("openCodaEval"),
+        click: () => {
+          if (typeof ctx.openCodaEval === "function") ctx.openCodaEval();
         },
       },
       {

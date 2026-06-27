@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'none';
+           style-src 'unsafe-inline';
+           script-src 'unsafe-inline' 'self';
+           connect-src http://127.0.0.1:* http://localhost:*;
+           img-src 'self' data:">
+<title>小哒 Coda · 工作台</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #ece7de;
+  --card: #fffdf8;
+  --ink: #2b2723;
+  --accent: #e0623a;
+  --accent-hover: #c95430;
+  --muted: #6b6258;
+  --border: #ddd5c8;
+  --pill: #f0eadf;
+  --code-bg: #2b2723;
+  --code-fg: #f0eadf;
+  --green: #2d7a3a;
+  --orange: #c96a10;
+  --red: #be2c2c;
+  --score-green-bg: #d4f0d8;
+  --score-green-fg: #1d5c27;
+  --score-orange-bg: #fde6c4;
+  --score-orange-fg: #7a3c00;
+  --score-red-bg: #fdd5d5;
+  --score-red-fg: #7a0000;
+  --shadow: 0 2px 8px rgba(43,39,35,0.08);
+  --radius: 12px;
+}
+
+html, body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  padding: 24px 20px 48px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ── 顶部标题区 ── */
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-family: Georgia, "Songti SC", "SimSun", serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  margin-bottom: 14px;
+}
+
+.scan-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.scan-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.scan-input:focus {
+  border-color: var(--accent);
+}
+
+.scan-input::placeholder {
+  color: var(--muted);
+}
+
+.port-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.port-input {
+  width: 72px;
+  padding: 9px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 13px;
+  font-family: "Menlo", "Monaco", monospace;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.port-input:focus {
+  border-color: var(--accent);
+}
+
+.btn-scan {
+  padding: 9px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.btn-scan:hover {
+  background: var(--accent-hover);
+}
+
+.btn-scan:active {
+  transform: scale(0.97);
+}
+
+.btn-scan:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-line {
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--muted);
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-line.error {
+  color: var(--red);
+}
+
+.status-line.success {
+  color: var(--green);
+}
+
+.spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── 卡片通用 ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title .icon {
+  font-size: 18px;
+}
+
+/* ── 占位态 ── */
+.placeholder {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 20px 0;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ── ① 人设与行业 ── */
+.industry-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.industry-label {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.industry-name {
+  color: var(--accent);
+}
+
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--pill);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.evidence-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.chip {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 20px;
+  padding: 3px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: "Menlo", "Monaco", monospace;
+}
+
+.meta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.meta-item {
+  background: var(--pill);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.meta-item-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.meta-item-value {
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.redlines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.redline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink);
+  padding: 6px 10px;
+  background: #fff5f5;
+  border: 1px solid #ffc9c9;
+  border-radius: 7px;
+}
+
+.redline-icon {
+  flex-shrink: 0;
+  font-size: 13px;
+  margin-top: 1px;
+}
+
+.edit-profile-btn {
+  background: var(--pill);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.edit-profile-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.industry-edit-input {
+  border: 1.5px solid var(--accent);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--card);
+  outline: none;
+  width: 180px;
+}
+
+/* ── ② 可复用模块 ── */
+.reuse-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reuse-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.reuse-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--pill);
+  gap: 8px;
+}
+
+.reuse-item-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.reuse-item-from {
+  font-size: 11.5px;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2px 9px;
+}
+
+.copy-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 500;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.copy-btn:hover {
+  background: var(--accent-hover);
+}
+
+.copy-btn.copied {
+  background: var(--green);
+}
+
+.code-block {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: "Menlo", "Monaco", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 12px 16px;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 0;
+}
+
+/* ── ③ 项目优化建议 ── */
+.avg-score-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.avg-score-number {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.avg-score-label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.file-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-review-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.file-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--pill);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+
+.file-review-header:hover {
+  background: #e8e1d4;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 13px;
+  font-family: "Menlo", "Monaco", monospace;
+  color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: Georgia, serif;
+  flex-shrink: 0;
+}
+
+.score-badge.green {
+  background: var(--score-green-bg);
+  color: var(--score-green-fg);
+}
+
+.score-badge.orange {
+  background: var(--score-orange-bg);
+  color: var(--score-orange-fg);
+}
+
+.score-badge.red {
+  background: var(--score-red-bg);
+  color: var(--score-red-fg);
+}
+
+.expand-arrow {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.expand-arrow.open {
+  transform: rotate(90deg);
+}
+
+.file-issues {
+  display: none;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-issues.open {
+  display: flex;
+}
+
+.issue-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--border);
+  background: var(--pill);
+}
+
+.issue-item.high {
+  border-left-color: var(--red);
+  background: #fff5f5;
+}
+
+.issue-item.mid {
+  border-left-color: var(--orange);
+  background: #fff9f0;
+}
+
+.issue-item.low {
+  border-left-color: #bbb;
+  background: var(--pill);
+}
+
+.issue-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.issue-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.issue-dot.high { background: var(--red); }
+.issue-dot.mid  { background: var(--orange); }
+.issue-dot.low  { background: #aaa; }
+
+.issue-problem {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  flex: 1;
+}
+
+.issue-loc {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: "Menlo", "Monaco", monospace;
+  flex-shrink: 0;
+}
+
+.issue-fix {
+  font-size: 12.5px;
+  color: var(--muted);
+  padding-left: 16px;
+  line-height: 1.5;
+}
+
+.issue-fix-label {
+  font-weight: 600;
+  color: var(--ink);
+  margin-right: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- ── 顶部标题 + 扫描栏 ── -->
+<div class="page-header">
+  <div class="page-title">🐾 小哒 Coda · 工作台</div>
+  <div class="scan-bar">
+    <input
+      id="root-input"
+      class="scan-input"
+      type="text"
+      placeholder="粘贴一个本地项目目录，回车扫描"
+    />
+    <div class="port-group">
+      <span>端口</span>
+      <input id="port-input" class="port-input" type="text" value="8848" />
+    </div>
+    <button id="scan-btn" class="btn-scan">扫描</button>
+  </div>
+  <div id="status-line" class="status-line"></div>
+</div>
+
+<!-- ── ① 人设与行业 ── -->
+<div class="card" id="card-profile">
+  <div class="card-title">
+    <span class="icon">🧬</span>人设与行业
+  </div>
+  <div id="profile-content">
+    <div class="placeholder">扫描后这里会显示行业画像推断</div>
+  </div>
+</div>
+
+<!-- ── ② 公共模块（可复用轮子） ── -->
+<div class="card" id="card-reuse">
+  <div class="card-title">
+    <span class="icon">♻️</span>公共模块（可复用轮子）
+  </div>
+  <div id="reuse-content">
+    <div class="placeholder">扫描后这里会列出可复用的公共模块</div>
+  </div>
+</div>
+
+<!-- ── ③ 项目优化建议（跑分+得分） ── -->
+<div class="card" id="card-reviews">
+  <div class="card-title">
+    <span class="icon">📊</span>项目优化建议（跑分 + 得分）
+  </div>
+  <div id="reviews-content">
+    <div class="placeholder">扫描后这里会列出各文件跑分与改进建议</div>
+  </div>
+</div>
+
+<script>
+// ── 全局状态 ──
+var _currentIndustry = '';   // 当前行业（可被用户手改）
+var _scanResult     = null;  // 最后一次扫描结果
+
+// ── 工具函数 ──
+function el(id) { return document.getElementById(id); }
+
+function setStatus(msg, type) {
+  var s = el('status-line');
+  s.className = 'status-line' + (type ? ' ' + type : '');
+  s.innerHTML = msg;
+}
+
+function scoreClass(score) {
+  if (score >= 80) return 'green';
+  if (score >= 60) return 'orange';
+  return 'red';
+}
+
+function scoreColor(score) {
+  if (score >= 80) return '#2d7a3a';
+  if (score >= 60) return '#c96a10';
+  return '#be2c2c';
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── 渲染 ① 人设与行业 ──
+function renderProfile(profile) {
+  if (!profile) {
+    el('profile-content').innerHTML = '<div class="placeholder">暂无画像数据</div>';
+    return;
+  }
+
+  _currentIndustry = profile.industry || '未知';
+
+  var confidence = profile.confidence != null
+    ? Math.round(profile.confidence * 100) + '%'
+    : '--';
+
+  var evidenceHtml = '';
+  if (profile.evidence && profile.evidence.length) {
+    evidenceHtml = '<div class="evidence-chips">'
+      + profile.evidence.map(function(e) {
+          return '<span class="chip">' + escHtml(e) + '</span>';
+        }).join('')
+      + '</div>';
+  }
+
+  var metaHtml = '';
+  if (profile.subDomain || profile.roleGuess) {
+    metaHtml = '<div class="meta-row">';
+    if (profile.subDomain) {
+      metaHtml += '<div class="meta-item">'
+        + '<div class="meta-item-label">细分领域</div>'
+        + '<div class="meta-item-value">' + escHtml(profile.subDomain) + '</div>'
+        + '</div>';
+    }
+    if (profile.roleGuess) {
+      metaHtml += '<div class="meta-item">'
+        + '<div class="meta-item-label">角色画像</div>'
+        + '<div class="meta-item-value">' + escHtml(profile.roleGuess) + '</div>'
+        + '</div>';
+    }
+    metaHtml += '</div>';
+  }
+
+  var redlinesHtml = '';
+  if (profile.redlines && profile.redlines.length) {
+    redlinesHtml = '<div class="redlines-list">'
+      + profile.redlines.map(function(r) {
+          return '<div class="redline-item">'
+            + '<span class="redline-icon">⚠</span>'
+            + '<span>' + escHtml(r) + '</span>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }
+
+  el('profile-content').innerHTML =
+    '<div class="industry-hero">'
+      + '<span class="industry-label">我猜你是做【<span class="industry-name" id="industry-display">'
+        + escHtml(_currentIndustry) + '</span>】的</span>'
+      + '<span class="confidence-badge">置信度 ' + confidence + '</span>'
+    + '</div>'
+    + evidenceHtml
+    + metaHtml
+    + redlinesHtml
+    + '<button class="edit-profile-btn" onclick="toggleEditIndustry()">编辑画像</button>';
+}
+
+// ── 编辑行业名（最简实现，不持久化） ──
+function toggleEditIndustry() {
+  var display = el('industry-display');
+  if (!display) return;
+
+  if (display.tagName === 'SPAN') {
+    // 切换为输入框
+    var val = display.textContent;
+    var input = document.createElement('input');
+    input.className = 'industry-edit-input';
+    input.value = val;
+    input.id = 'industry-display';
+    input.onblur = function() { saveIndustry(input.value); };
+    input.onkeydown = function(e) {
+      if (e.key === 'Enter') { input.blur(); }
+      if (e.key === 'Escape') { saveIndustry(_currentIndustry); }
+    };
+    display.parentNode.replaceChild(input, display);
+    input.focus();
+    input.select();
+  } else {
+    saveIndustry(display.value);
+  }
+}
+
+function saveIndustry(val) {
+  _currentIndustry = val || _currentIndustry;
+  var display = el('industry-display');
+  if (!display) return;
+  var span = document.createElement('span');
+  span.className = 'industry-name';
+  span.id = 'industry-display';
+  span.textContent = _currentIndustry;
+  if (display.parentNode) display.parentNode.replaceChild(span, display);
+}
+
+// ── 渲染 ② 公共模块 ──
+function renderReuse(reuse) {
+  var candidates = reuse && reuse.candidates;
+  if (!candidates || !candidates.length) {
+    el('reuse-content').innerHTML = '<div class="placeholder">扫描后这里会列出可复用的公共模块</div>';
+    return;
+  }
+
+  var html = '<div class="reuse-list">';
+  candidates.forEach(function(item, idx) {
+    var snippetId = 'snippet-' + idx;
+    html += '<div class="reuse-item">'
+      + '<div class="reuse-item-header">'
+        + '<span class="reuse-item-name">' + escHtml(item.name || '未命名') + '</span>'
+        + '<span class="reuse-item-from">来自 ' + escHtml(item.fromProject || '—') + '</span>'
+        + '<button class="copy-btn" onclick="copySnippet(' + idx + ', this)"'
+          + ' data-snippet-idx="' + idx + '">复制</button>'
+      + '</div>';
+
+    if (item.snippet) {
+      html += '<pre class="code-block" id="' + snippetId + '">'
+        + escHtml(item.snippet)
+        + '</pre>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  el('reuse-content').innerHTML = html;
+
+  // 存 snippet 到全局，供复制用
+  window._reuseSnippets = candidates.map(function(c) { return c.snippet || ''; });
+}
+
+function copySnippet(idx, btn) {
+  var snippets = window._reuseSnippets || [];
+  var text = snippets[idx] || '';
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = '已复制✓';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = orig;
+      btn.classList.remove('copied');
+    }, 1800);
+  }).catch(function() {
+    // 降级：选中 pre 块
+    var pre = el('snippet-' + idx);
+    if (pre) {
+      var sel = window.getSelection();
+      var range = document.createRange();
+      range.selectNodeContents(pre);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  });
+}
+
+// ── 渲染 ③ 项目优化建议 ──
+function renderReviews(reviews) {
+  if (!reviews || !reviews.length) {
+    el('reviews-content').innerHTML = '<div class="placeholder">扫描后这里会列出各文件跑分与改进建议</div>';
+    return;
+  }
+
+  var total = reviews.reduce(function(s, r) { return s + (r.score || 0); }, 0);
+  var avg = Math.round(total / reviews.length);
+  var avgClass = scoreClass(avg);
+  var avgColorStr = scoreColor(avg);
+
+  var html = '<div class="avg-score-hero">'
+    + '<div class="avg-score-number" style="color:' + avgColorStr + '">' + avg + '</div>'
+    + '<div><div class="avg-score-label">平均得分</div>'
+      + '<div style="font-size:12px;color:var(--muted)">共 ' + reviews.length + ' 个文件</div></div>'
+    + '</div>'
+    + '<div class="file-reviews-list">';
+
+  reviews.forEach(function(r, rIdx) {
+    var score = r.score != null ? r.score : '--';
+    var cls   = typeof score === 'number' ? scoreClass(score) : 'orange';
+    var issues = r.issues || [];
+    var fileId = 'file-issues-' + rIdx;
+
+    html += '<div class="file-review-item">'
+      + '<div class="file-review-header" onclick="toggleFileIssues(' + rIdx + ')">'
+        + '<span class="file-name" title="' + escHtml(r.file || '') + '">'
+            + escHtml(r.file || '未知文件')
+          + '</span>'
+        + '<span class="score-badge ' + cls + '">' + score + '</span>'
+        + '<span class="expand-arrow" id="arrow-' + rIdx + '">▶</span>'
+      + '</div>'
+      + '<div class="file-issues" id="' + fileId + '">';
+
+    if (issues.length) {
+      issues.forEach(function(issue) {
+        var level = (issue.redlineLevel || 'low').toLowerCase();
+        if (level !== 'high' && level !== 'mid') level = 'low';
+
+        var locStr = '';
+        if (issue.loc && issue.loc.line) {
+          locStr = escHtml(issue.loc.file || r.file || '') + ':' + issue.loc.line;
+        }
+
+        html += '<div class="issue-item ' + level + '">'
+          + '<div class="issue-header">'
+            + '<span class="issue-dot ' + level + '"></span>'
+            + '<span class="issue-problem">' + escHtml(issue.problem || '—') + '</span>'
+            + (locStr ? '<span class="issue-loc">' + locStr + '</span>' : '')
+          + '</div>';
+
+        if (issue.fix) {
+          html += '<div class="issue-fix">'
+            + '<span class="issue-fix-label">改法：</span>'
+            + escHtml(issue.fix)
+            + '</div>';
+        }
+        html += '</div>';
+      });
+    } else {
+      html += '<div class="placeholder" style="padding:12px 0">该文件暂无具体问题记录</div>';
+    }
+
+    html += '</div></div>';
+  });
+
+  html += '</div>';
+  el('reviews-content').innerHTML = html;
+}
+
+// 展开/收起文件问题
+function toggleFileIssues(idx) {
+  var panel = el('file-issues-' + idx);
+  var arrow = el('arrow-' + idx);
+  if (!panel) return;
+  var isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  if (arrow) arrow.classList.toggle('open', !isOpen);
+}
+
+// ── 核心：执行扫描 ──
+function doScan(root, port) {
+  if (!root || !root.trim()) {
+    setStatus('请先填写项目目录', 'error');
+    return;
+  }
+
+  port = port || '8848';
+  var url = 'http://127.0.0.1:' + port + '/scan';
+
+  setStatus('<span class="spinner"></span> 扫描中，请稍候…');
+  el('scan-btn').disabled = true;
+
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ root: root.trim() })
+  })
+  .then(function(res) {
+    if (!res.ok) {
+      return res.text().then(function(t) {
+        throw new Error('HTTP ' + res.status + '：' + (t || '服务端错误'));
+      });
+    }
+    return res.json();
+  })
+  .then(function(data) {
+    _scanResult = data;
+    setStatus('✓ 扫描完成（'
+      + (data.scan_summary && data.scan_summary.fileCount != null
+          ? data.scan_summary.fileCount + ' 个文件'
+          : '')
+      + '）', 'success');
+
+    renderProfile(data.profile || null);
+    renderReuse(data.reuse || null);
+    renderReviews(data.reviews || null);
+  })
+  .catch(function(err) {
+    var isNetErr = err instanceof TypeError;
+    if (isNetErr) {
+      setStatus(
+        '评价服务没连上，请先在 agent/ 目录跑 <code style="font-family:monospace;background:var(--pill);padding:1px 5px;border-radius:4px;">python3 server.py ' + port + '</code>',
+        'error'
+      );
+    } else {
+      setStatus('扫描出错：' + err.message, 'error');
+    }
+    // 重置三个卡片到占位态（不清空，保留上次结果可能更好，这里重置为友好提示）
+    el('profile-content').innerHTML = '<div class="placeholder">等待扫描…</div>';
+    el('reuse-content').innerHTML   = '<div class="placeholder">扫描后这里会列出可复用的公共模块</div>';
+    el('reviews-content').innerHTML = '<div class="placeholder">扫描后这里会列出各文件跑分与改进建议</div>';
+  })
+  .finally(function() {
+    el('scan-btn').disabled = false;
+  });
+}
+
+// ── 外部触发接口（供 Electron 主进程调用） ──
+window.codaScan = function(root, port) {
+  var p = port || el('port-input').value || '8848';
+  el('root-input').value = root || '';
+  doScan(root, p);
+};
+
+// ── 事件绑定 ──
+el('scan-btn').addEventListener('click', function() {
+  doScan(el('root-input').value, el('port-input').value);
+});
+
+el('root-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    doScan(el('root-input').value, el('port-input').value);
+  }
+});
+
+// ── 读取 URL query 参数，自动填入并触发扫描 ──
+(function initFromQuery() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var root = params.get('root');
+    var port = params.get('port');
+
+    if (port) {
+      el('port-input').value = port;
+    }
+    if (root) {
+      el('root-input').value = root;
+      // 延一帧确保 DOM 就绪
+      setTimeout(function() { doScan(root, port || el('port-input').value); }, 60);
+    }
+  } catch (e) {
+    // URL API 异常时静默跳过
+  }
+})();
+</script>
+</body>
+</html>

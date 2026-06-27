@@ -1658,6 +1658,18 @@ showDashboard = _dashboard.showDashboard;
 broadcastDashboardSessionSnapshot = _dashboard.broadcastSessionSnapshot;
 sendDashboardI18n = _dashboard.sendI18n;
 
+// 小哒 Coda · 评价工作台窗口（回车键队扩展）。仿 _dashboard 装配，复用同样的
+// 桌宠定位 / 工作区 / textScale 能力；窗口本体 coda-eval.html，调评价 Agent HTTP 服务。
+const _codaEval = require("./coda-eval")({
+  t: (key) => translate(key),
+  getPetWindowBounds,
+  getNearestWorkArea,
+  getTextScale: () => effectiveTextScaleForKey(
+    getWindowDisplayKey(_codaEval ? _codaEval.getWindow() : null) || getPetDisplayKey()
+  ),
+  iconPath: settingsWindowRuntime.getIconPath(),
+});
+
 // ── First-run onboarding tutorial ──
 // Buckets the installable agents for the tutorial's step 2. We call the
 // detector with skipDefaultIntegrations:false so the default integrations
@@ -2920,6 +2932,7 @@ const _menuCtx = {
   checkForUpdates: (...args) => checkForUpdates(...args),
   getUpdateMenuItem: () => getUpdateMenuItem(),
   openDashboard: () => showDashboard(),
+  openCodaEval: () => _codaEval.showCodaEval(),
   launchClaudeSession: (mode, cwd, sessionId) => launchClaudeSession(mode, cwd, sessionId),
   newSessionWithFolder: async (t) => {
     const parent = win && !win.isDestroyed() ? win : null;
