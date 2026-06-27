@@ -38,19 +38,47 @@
     "shadowOrigin": "7.5px 15px"
   },
   "states": {
-    "idle": ["coda-idle.svg"],
-    "yawning": ["coda-waking.svg"],
-    "dozing": ["coda-sleeping.svg"],
-    "collapsing": ["coda-sleeping.svg"],
-    "thinking": ["coda-thinking.svg"],
-    "working": ["coda-working.svg"],
-    "juggling": ["coda-juggling.svg"],
-    "sweeping": ["coda-sweeping.svg"],
-    "error": ["coda-error.svg"],
-    "attention": ["coda-happy.svg"],
-    "notification": ["coda-notification.svg"],
-    "carrying": ["coda-working.svg"],
-    "sleeping": ["coda-sleeping.svg"],
-    "waking": ["coda-waking.svg"]
+    "idle": [
+      "coda-idle.apng"
+    ],
+    "yawning": [
+      "coda-waking.apng"
+    ],
+    "dozing": [
+      "coda-sleeping.apng"
+    ],
+    "collapsing": [
+      "coda-sleeping.apng"
+    ],
+    "thinking": [
+      "coda-thinking.apng"
+    ],
+    "working": [
+      "coda-working.apng"
+    ],
+    "juggling": [
+      "coda-juggling.apng"
+    ],
+    "sweeping": [
+      "coda-sweeping.apng"
+    ],
+    "error": [
+      "coda-error.apng"
+    ],
+    "attention": [
+      "coda-happy.apng"
+    ],
+    "notification": [
+      "coda-notification.apng"
+    ],
+    "carrying": [
+      "coda-working.apng"
+    ],
+    "sleeping": [
+      "coda-sleeping.apng"
+    ],
+    "waking": [
+      "coda-waking.apng"
+    ]
   }
 }
