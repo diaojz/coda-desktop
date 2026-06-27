@@ -104,7 +104,7 @@ const SCHEMA = {
   preMiniX: { type: "number", default: 0, validate: (v) => Number.isFinite(v) },
   preMiniY: { type: "number", default: 0, validate: (v) => Number.isFinite(v) },
   // Pure data prefs
-  lang: { type: "string", default: "en", enum: ["en", "zh", "zh-TW", "ko", "ja"] },
+  lang: { type: "string", default: "zh", enum: ["en", "zh", "zh-TW", "ko", "ja"] },
   showTray: { type: "boolean", default: true },
   // Default off (macOS): a fresh install runs as an accessory/agent app — pet +
   // menu-bar icon, no Dock tile. Existing users keep their Dock — a persisted
@@ -978,7 +978,7 @@ function save(prefsPath, snapshot) {
 // locales fall back to English. Pure (no Electron dependency) so it stays
 // unit-testable; the caller passes app.getLocale() in.
 function mapLocaleToLang(locale) {
-  if (typeof locale !== "string" || !locale) return "en";
+  if (typeof locale !== "string" || !locale) return "zh";
   const l = locale.toLowerCase().replace(/_/g, "-");
   if (l === "zh" || l.startsWith("zh-")) {
     // Traditional-script tags/regions → zh-TW; all other Chinese → zh.
@@ -987,7 +987,7 @@ function mapLocaleToLang(locale) {
   }
   if (l === "ko" || l.startsWith("ko-")) return "ko";
   if (l === "ja" || l.startsWith("ja-")) return "ja";
-  return "en";
+  return "zh";
 }
 
 module.exports = {
