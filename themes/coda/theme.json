@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "name": "Coda",
+  "author": "回车键 / Enter-Key Team",
+  "version": "0.1.0",
+  "description": "小哒 Coda — 替你把 AI 写的活儿盯到收尾的暖橙小精灵（基于 clawd-on-desk 二开）",
+  "viewBox": {
+    "x": -15,
+    "y": -25,
+    "width": 45,
+    "height": 45
+  },
+  "layout": {
+    "contentBox": {
+      "x": -4,
+      "y": -3,
+      "width": 23,
+      "height": 20
+    },
+    "marginBox": {
+      "x": -8,
+      "y": -7,
+      "width": 30,
+      "height": 24
+    },
+    "centerX": 7.5,
+    "baselineY": 17,
+    "visibleHeightRatio": 0.58,
+    "baselineBottomRatio": 0.05
+  },
+  "eyeTracking": {
+    "enabled": false,
+    "states": [],
+    "ids": {
+      "body": "body-js",
+      "shadow": "shadow-js"
+    },
+    "shadowOrigin": "7.5px 15px"
+  },
+  "states": {
+    "idle": ["coda-idle.svg"],
+    "yawning": ["coda-idle.svg"],
+    "dozing": ["coda-sleeping.svg"],
+    "collapsing": ["coda-sleeping.svg"],
+    "thinking": ["coda-thinking.svg"],
+    "working": ["coda-thinking.svg"],
+    "juggling": ["coda-happy.svg"],
+    "sweeping": ["coda-thinking.svg"],
+    "error": ["coda-error.svg"],
+    "attention": ["coda-happy.svg"],
+    "notification": ["coda-happy.svg"],
+    "carrying": ["coda-thinking.svg"],
+    "sleeping": ["coda-sleeping.svg"],
+    "waking": ["coda-idle.svg"]
+  }
+}

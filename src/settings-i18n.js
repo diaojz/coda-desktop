@@ -619,7 +619,7 @@
       toastSoundOverrideFailed: (message) => `Sound override failed: ${message}`,
       aboutTitle: "About Clawd",
       aboutSubtitle: "The pixel crab that watches your AI coding sessions.",
-      aboutTagline: "A desktop companion for your AI coding journey.",
+      aboutTagline: "Watches your AI coding agents through to the finish — so you don't have to.",
       aboutVersionLabel: "Version",
       aboutCheckForUpdates: "Check for Updates",
       aboutUpdateAvailableHint: "Update available: v{version}",
@@ -1266,7 +1266,7 @@
       toastSoundOverrideFailed: (message) => `音效替换失败：${message}`,
       aboutTitle: "关于 Clawd",
       aboutSubtitle: "陪你写代码的像素螃蟹。",
-      aboutTagline: "陪你 AI 编码的桌面伙伴。",
+      aboutTagline: "替你把 AI 写的活儿盯到收尾的桌面小精灵。",
       aboutVersionLabel: "版本",
       aboutCheckForUpdates: "检查更新",
       aboutUpdateAvailableHint: "有新版本: v{version}",
@@ -1913,7 +1913,7 @@
       toastSoundOverrideFailed: (message) => `音效自訂失敗：${message}`,
       aboutTitle: "關於 Clawd",
       aboutSubtitle: "陪你寫程式的像素螃蟹。",
-      aboutTagline: "陪你 AI 程式設計的桌面夥伴。",
+      aboutTagline: "替你把 AI 寫的活兒盯到收尾的桌面小精靈。",
       aboutVersionLabel: "版本",
       aboutCheckForUpdates: "檢查更新",
       aboutUpdateAvailableHint: "有新版本: v{version}",
@@ -2560,7 +2560,7 @@
       toastSoundOverrideFailed: (message) => `음향 덮어쓰기 실패: ${message}`,
       aboutTitle: "Clawd 정보",
       aboutSubtitle: "당신의 AI 코딩 세션을 지켜보는 픽셀 게.",
-      aboutTagline: "AI 코딩 여정을 함께하는 데스크톱 동반자.",
+      aboutTagline: "AI 코딩 에이전트를 끝까지 지켜봐 주는 데스크톱 친구.",
       aboutVersionLabel: "버전",
       aboutCheckForUpdates: "업데이트 확인",
       aboutUpdateAvailableHint: "새 버전 있음: v{version}",
@@ -3209,7 +3209,7 @@
       toastSoundOverrideFailed: (message) => `効果音の差し替えに失敗: ${message}`,
       aboutTitle: "Clawd について",
       aboutSubtitle: "あなたの AI コーディングを見守るピクセル蟹。",
-      aboutTagline: "AI コーディングのデスクトップ相棒。",
+      aboutTagline: "AI コーディングを最後まで見守るデスクトップの相棒。",
       aboutVersionLabel: "バージョン",
       aboutCheckForUpdates: "アップデートを確認",
       aboutUpdateAvailableHint: "新しいバージョンがあります: v{version}",
@@ -3244,6 +3244,7 @@
   };
 
   const MAINTAINERS = [
+    "diaojz",
     "rullerzhou-afk", "YOIMIYA66", "Bynlk",
   ];
 
