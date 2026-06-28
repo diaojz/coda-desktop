@@ -707,38 +707,255 @@ body {
   color: var(--ink);
   margin-right: 4px;
 }
+
+/* ── 项目列表 / 拖拽区 ── */
+.projects-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  font-family: -apple-system, sans-serif;
+}
+
+.dropzone {
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 6px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.dropzone.dragover {
+  border-color: var(--accent);
+  background: #fff3ee;
+}
+
+.dropzone-hint {
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+  padding: 14px 8px;
+  font-style: italic;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.projects-list:empty { display: none; }
+
+.project-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.project-row:hover { background: var(--pill); }
+.project-row.active {
+  border-color: var(--accent);
+  background: #fff6f1;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.project-status {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+.project-status .spinner { width: 12px; height: 12px; }
+
+.project-path {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.project-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-dir {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: "Menlo", "Monaco", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-score {
+  flex-shrink: 0;
+  font-family: Georgia, serif;
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 32px;
+  text-align: right;
+}
+
+.project-remove {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.12s, color 0.12s;
+}
+.project-remove:hover { background: #fdd5d5; color: var(--red); }
+
+/* ── 人设摘要条（独立卡内顶部） ── */
+.persona-summary {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #0a1626, #13243f);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #f3ece0;
+  font-size: 13px;
+}
+.persona-summary .persona-icon { font-size: 16px; }
+.persona-summary .persona-headline { font-weight: 700; color: #e8a84a; }
+.persona-summary .persona-skills {
+  font-size: 12px;
+  color: #a9b7c9;
+  border-left: 1px solid rgba(255,255,255,.2);
+  padding-left: 10px;
+}
+
+/* ── ④ 行业映射对照表 ── */
+.mapping-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mapping-head {
+  display: grid;
+  grid-template-columns: 1fr 18px 1fr;
+  gap: 10px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mapping-row {
+  display: grid;
+  grid-template-columns: 1fr 18px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+}
+.mapping-row:hover { background: var(--pill); }
+
+.mapping-code {
+  min-width: 0;
+}
+.mapping-code .mp-path {
+  font-family: "Menlo", "Monaco", monospace;
+  font-size: 12px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mapping-code .mp-cats {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.mapping-arrow {
+  text-align: center;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.mapping-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.mp-term {
+  background: var(--score-orange-bg);
+  color: var(--score-orange-fg);
+  border-radius: 14px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@media (max-width: 560px) {
+  .mapping-head, .mapping-row { grid-template-columns: 1fr; gap: 4px; }
+  .mapping-arrow { display: none; }
+}
 </style>
 </head>
 <body>
 
-<!-- ── 顶部标题 + 扫描栏 ── -->
+<!-- ── 顶部标题 + 操作栏 ── -->
 <div class="page-header">
   <div class="page-title">🐾 小哒 Coda · 工作台</div>
   <div class="scan-bar">
-    <button id="pick-btn" class="btn-pick" title="选择本地项目文件夹">📁 选文件夹</button>
+    <button id="pick-btn" class="btn-pick" title="选择一个或多个项目文件夹（可多选）">📁 加项目</button>
+    <button id="pick-parent-btn" class="btn-pick" title="选一个常用父目录，自动列出里面的多个项目">📂 选父目录</button>
     <input
       id="root-input"
       class="scan-input"
       type="text"
-      placeholder="选文件夹，或粘贴一个本地项目目录后回车"
+      placeholder="或粘贴一个本地项目目录后回车加入列表"
     />
     <div class="port-group">
       <span>端口</span>
       <input id="port-input" class="port-input" type="text" value="8848" />
     </div>
-    <button id="scan-btn" class="btn-scan">扫描</button>
+    <button id="scan-btn" class="btn-scan">扫全部</button>
   </div>
   <div id="status-line" class="status-line"></div>
-  <div id="persona-bar" class="persona-bar" style="display:none"></div>
 </div>
 
-<!-- ── ① 人设与行业 ── -->
-<div class="card" id="card-profile">
+<!-- ── 项目列表（多项目：选一个看一个） ── -->
+<div class="card" id="card-projects">
   <div class="card-title">
-    <span class="icon">🧬</span>人设与行业
+    <span class="icon">🗂️</span>项目列表
+    <span id="projects-count" class="projects-count"></span>
   </div>
-  <div id="profile-content">
-    <div class="placeholder">扫描后这里会显示行业画像推断</div>
+  <div id="dropzone" class="dropzone">
+    <div id="projects-list" class="projects-list"></div>
+    <div id="dropzone-hint" class="dropzone-hint">
+      把项目文件夹拖进来，或点上方「加项目 / 选父目录」。选一个项目看它的详情 ↓
+    </div>
+  </div>
+</div>
+
+<!-- ── ① 项目评分（置顶） ── -->
+<div class="card" id="card-reviews">
+  <div class="card-title">
+    <span class="icon">📊</span>项目评分（跑分 + 得分）
+  </div>
+  <div id="reviews-content">
+    <div class="placeholder">选一个项目并扫描后，这里会列出各文件跑分与改进建议</div>
   </div>
 </div>
 
@@ -752,23 +969,53 @@ body {
   </div>
 </div>
 
-<!-- ── ③ 项目优化建议（跑分+得分） ── -->
-<div class="card" id="card-reviews">
+<!-- ── ③ 人设跟随（独立卡） ── -->
+<div class="card" id="card-profile">
   <div class="card-title">
-    <span class="icon">📊</span>项目优化建议（跑分 + 得分）
+    <span class="icon">🧬</span>人设跟随
   </div>
-  <div id="reviews-content">
-    <div class="placeholder">扫描后这里会列出各文件跑分与改进建议</div>
+  <div id="persona-summary" class="persona-summary" style="display:none"></div>
+  <div id="profile-content">
+    <div class="placeholder">扫描后这里会显示行业画像推断，越用越准</div>
+  </div>
+</div>
+
+<!-- ── ④ 行业映射（代码 ↔ 行话 对照） ── -->
+<div class="card" id="card-mapping">
+  <div class="card-title">
+    <span class="icon">🔗</span>行业映射（代码 ↔ 你那行的话）
+  </div>
+  <div id="mapping-content">
+    <div class="placeholder">扫描后，这里把项目里的代码文件翻译成你那行的行话</div>
   </div>
 </div>
 
 <script>
-// ── 全局状态 ──
+// ── 全局状态（多项目：选一个看一个）──
 var _currentIndustry = '';   // 当前行业（可被用户手改）
-var _scanResult     = null;  // 最后一次扫描结果
+var _scanResult     = null;  // 当前选中项目的扫描结果
+var _projects       = [];    // [{ root, name, status:'idle'|'scanning'|'done'|'error', result, error }]
+var _activeRoot     = null;  // 当前选中项目的 root
 
 // ── 工具函数 ──
 function el(id) { return document.getElementById(id); }
+
+function baseName(p) {
+  if (!p) return '';
+  var parts = String(p).replace(/[\/\\]+$/, '').split(/[\/\\]/);
+  return parts[parts.length - 1] || p;
+}
+
+function getPort() {
+  return (el('port-input') && el('port-input').value) || '8848';
+}
+
+function findProject(root) {
+  for (var i = 0; i < _projects.length; i++) {
+    if (_projects[i].root === root) return _projects[i];
+  }
+  return null;
+}
 
 function setStatus(msg, type) {
   var s = el('status-line');
@@ -916,9 +1163,9 @@ function saveIndustry(val) {
 
 // ── 把手改的画像持久化到评价 Agent（人设跟随：改一次，记一辈子）──
 function persistProfileOverride() {
-  var root = (el('root-input') && el('root-input').value || '').trim();
+  var root = _activeRoot;
   if (!root) return;
-  var port = (el('port-input') && el('port-input').value) || '8848';
+  var port = getPort();
   var override = { industry: _currentIndustry };
   // 行业改了，红线也跟着换成该行业的（让评价跟着走）——交给后端按行业补默认红线，
   // 这里只传 industry；若将来支持手编红线，再带上 redlines。
@@ -1098,6 +1345,40 @@ function toggleFileIssues(idx) {
   if (arrow) arrow.classList.toggle('open', !isOpen);
 }
 
+// ── 渲染 ④ 行业映射（代码文件 ↔ 行业行话 对照表）──
+function renderMapping(mapping) {
+  var rows = mapping && mapping.rows;
+  if (!rows || !rows.length) {
+    el('mapping-content').innerHTML = mapping && mapping.industry === '未知'
+      ? '<div class="placeholder">行业未识别，先在「人设跟随」里确认行业，再来看映射</div>'
+      : '<div class="placeholder">扫描后，这里把项目里的代码文件翻译成你那行的行话</div>';
+    return;
+  }
+
+  var html = '<div class="mapping-table">'
+    + '<div class="mapping-head">'
+      + '<span>代码文件 / 模块</span><span></span>'
+      + '<span>' + escHtml(mapping.industry || '行业') + '的话讲</span>'
+    + '</div>';
+
+  rows.forEach(function(r) {
+    var catsTxt = (r.categories || []).join(' · ');
+    var termsHtml = (r.terms || []).map(function(t) {
+      return '<span class="mp-term">' + escHtml(t) + '</span>';
+    }).join('');
+    html += '<div class="mapping-row">'
+      + '<div class="mapping-code">'
+        + '<div class="mp-path" title="' + escHtml(r.path || '') + '">' + escHtml(r.path || r.module || '') + '</div>'
+        + (catsTxt ? '<div class="mp-cats">' + escHtml(catsTxt) + '</div>' : '')
+      + '</div>'
+      + '<div class="mapping-arrow">→</div>'
+      + '<div class="mapping-terms">' + termsHtml + '</div>'
+    + '</div>';
+  });
+  html += '</div>';
+  el('mapping-content').innerHTML = html;
+}
+
 // ── ④人设跟随：拉取跨项目累积的人设摘要，显示在顶部 ──
 function loadPersona(port) {
   port = port || '8848';
@@ -1105,7 +1386,8 @@ function loadPersona(port) {
     .then(function(res) { return res.json(); })
     .then(function(d) {
       var p = d && d.persona;
-      var bar = el('persona-bar');
+      var bar = el('persona-summary');
+      if (!bar) return;
       if (!p || !p.projectsSeen) { bar.style.display = 'none'; return; }
       var html = '<span class="persona-icon">🧠</span>'
         + '<span class="persona-headline">' + escHtml(p.headline || '') + '</span>';
@@ -1120,23 +1402,115 @@ function loadPersona(port) {
     .catch(function() { /* 人设拉取失败不影响主流程 */ });
 }
 
-// ── 核心：执行扫描 ──
-function doScan(root, port) {
-  if (!root || !root.trim()) {
-    setStatus('请先填写项目目录', 'error');
+// ── 项目列表：增 / 删 / 选 / 渲染 ──
+function addProject(root, autoScan) {
+  root = (root || '').trim();
+  if (!root) return;
+  if (findProject(root)) {        // 已在列表里：选中它，必要时扫
+    selectProject(root);
+    if (autoScan && findProject(root).status === 'idle') scanProject(root);
     return;
   }
+  _projects.push({ root: root, name: baseName(root), status: 'idle', result: null, error: '' });
+  renderProjects();
+  selectProject(root);
+  if (autoScan) scanProject(root);
+}
 
-  port = port || '8848';
-  var url = 'http://127.0.0.1:' + port + '/scan';
+function removeProject(root) {
+  _projects = _projects.filter(function(p) { return p.root !== root; });
+  if (_activeRoot === root) {
+    _activeRoot = null;
+    _scanResult = null;
+    if (_projects.length) selectProject(_projects[0].root);
+    else clearDetail();
+  }
+  renderProjects();
+}
 
-  setStatus('<span class="spinner"></span> 扫描中，请稍候…');
-  el('scan-btn').disabled = true;
+function selectProject(root) {
+  var p = findProject(root);
+  if (!p) return;
+  _activeRoot = root;
+  _scanResult = p.result || null;
+  renderProjects();
+  if (p.result) {
+    renderDetail(p.result);
+  } else if (p.status === 'error') {
+    clearDetail();
+    setStatus('「' + escHtml(p.name) + '」扫描失败：' + escHtml(p.error || '未知错误'), 'error');
+  } else {
+    clearDetail();
+  }
+}
 
-  fetch(url, {
+function renderProjects() {
+  var list = el('projects-list');
+  var hint = el('dropzone-hint');
+  var count = el('projects-count');
+  if (!_projects.length) {
+    list.innerHTML = '';
+    if (hint) hint.style.display = 'block';
+    if (count) count.textContent = '';
+    return;
+  }
+  if (hint) hint.style.display = 'none';
+  if (count) count.textContent = '· 共 ' + _projects.length + ' 个';
+
+  list.innerHTML = _projects.map(function(p) {
+    var statusIcon = p.status === 'scanning'
+      ? '<span class="spinner"></span>'
+      : p.status === 'done' ? '✓'
+      : p.status === 'error' ? '⚠' : '·';
+    var scoreStr = '';
+    if (p.status === 'done' && p.result && p.result.reviews && p.result.reviews.length) {
+      var revs = p.result.reviews;
+      var avg = Math.round(revs.reduce(function(s, r){ return s + (r.score||0); }, 0) / revs.length);
+      scoreStr = '<span class="project-score" style="color:' + scoreColor(avg) + '">' + avg + '</span>';
+    }
+    return '<div class="project-row' + (p.root === _activeRoot ? ' active' : '') + '"'
+        + ' onclick="selectProject(' + JSON.stringify(p.root).replace(/"/g, '&quot;') + ')">'
+      + '<span class="project-status">' + statusIcon + '</span>'
+      + '<span class="project-path">'
+        + '<span class="project-name">' + escHtml(p.name) + '</span>'
+        + '<span class="project-dir" title="' + escHtml(p.root) + '">' + escHtml(p.root) + '</span>'
+      + '</span>'
+      + scoreStr
+      + '<button class="project-remove" title="移除"'
+        + ' onclick="event.stopPropagation();removeProject(' + JSON.stringify(p.root).replace(/"/g, '&quot;') + ')">×</button>'
+    + '</div>';
+  }).join('');
+}
+
+// ── 详情区：渲染 / 清空 ──
+function renderDetail(data) {
+  renderReviews(data.reviews || null);
+  renderReuse(data.reuse || null);
+  renderProfile(data.profile || null);
+  renderMapping(data.mapping || null);
+}
+
+function clearDetail() {
+  el('reviews-content').innerHTML = '<div class="placeholder">选一个项目并扫描后，这里会列出各文件跑分与改进建议</div>';
+  el('reuse-content').innerHTML   = '<div class="placeholder">扫描后这里会列出可复用的公共模块</div>';
+  el('profile-content').innerHTML = '<div class="placeholder">扫描后这里会显示行业画像推断，越用越准</div>';
+  el('mapping-content').innerHTML = '<div class="placeholder">扫描后，这里把项目里的代码文件翻译成你那行的行话</div>';
+}
+
+// ── 核心：扫描单个项目（写进它的槽位）──
+function scanProject(root) {
+  var p = findProject(root);
+  if (!p) return Promise.resolve();
+  var port = getPort();
+  p.status = 'scanning';
+  p.error = '';
+  renderProjects();
+  if (root === _activeRoot) setStatus('<span class="spinner"></span> 扫描「' + escHtml(p.name) + '」中…');
+
+  return fetch('http://127.0.0.1:' + port + '/scan', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ root: root.trim() })
+    body: JSON.stringify({ root: root })
   })
   .then(function(res) {
     if (!res.ok) {
@@ -1147,54 +1521,68 @@ function doScan(root, port) {
     return res.json();
   })
   .then(function(data) {
-    _scanResult = data;
-    setStatus('✓ 扫描完成（'
-      + (data.scan_summary && data.scan_summary.fileCount != null
-          ? data.scan_summary.fileCount + ' 个文件'
-          : '')
-      + '）', 'success');
-
-    renderProfile(data.profile || null);
-    renderReuse(data.reuse || null);
-    renderReviews(data.reviews || null);
+    p.status = 'done';
+    p.result = data;
+    renderProjects();
+    if (root === _activeRoot) {
+      _scanResult = data;
+      var fc = data.scan_summary && data.scan_summary.fileCount;
+      setStatus('✓ 「' + escHtml(p.name) + '」扫描完成（' + (fc != null ? fc + ' 个文件' : '') + '）', 'success');
+      renderDetail(data);
+    }
     loadPersona(port);
   })
   .catch(function(err) {
+    p.status = 'error';
     var isNetErr = err instanceof TypeError;
-    if (isNetErr) {
-      setStatus(
-        '评价服务没连上，请先在 agent/ 目录跑 <code style="font-family:monospace;background:var(--pill);padding:1px 5px;border-radius:4px;">python3 server.py ' + port + '</code>',
-        'error'
-      );
-    } else {
-      setStatus('扫描出错：' + err.message, 'error');
+    p.error = isNetErr ? '评价服务没连上' : err.message;
+    renderProjects();
+    if (root === _activeRoot) {
+      if (isNetErr) {
+        setStatus(
+          '评价服务没连上，请先在 agent/ 目录跑 <code style="font-family:monospace;background:var(--pill);padding:1px 5px;border-radius:4px;">python3 server.py ' + port + '</code>',
+          'error'
+        );
+      } else {
+        setStatus('「' + escHtml(p.name) + '」扫描出错：' + err.message, 'error');
+      }
     }
-    // 重置三个卡片到占位态（不清空，保留上次结果可能更好，这里重置为友好提示）
-    el('profile-content').innerHTML = '<div class="placeholder">等待扫描…</div>';
-    el('reuse-content').innerHTML   = '<div class="placeholder">扫描后这里会列出可复用的公共模块</div>';
-    el('reviews-content').innerHTML = '<div class="placeholder">扫描后这里会列出各文件跑分与改进建议</div>';
-  })
-  .finally(function() {
-    el('scan-btn').disabled = false;
   });
+}
+
+// ── 扫全部（未扫的逐个扫）──
+function scanAll() {
+  var pending = _projects.filter(function(p) { return p.status === 'idle' || p.status === 'error'; });
+  if (!_projects.length) { setStatus('请先加入项目', 'error'); return; }
+  if (!pending.length) {
+    // 全扫过了：重扫全部
+    pending = _projects.slice();
+  }
+  // 顺序扫，避免一次性打爆本地服务
+  pending.reduce(function(chain, p) {
+    return chain.then(function() { return scanProject(p.root); });
+  }, Promise.resolve());
 }
 
 // ── 外部触发接口（供 Electron 主进程调用） ──
 window.codaScan = function(root, port) {
-  var p = port || el('port-input').value || '8848';
-  el('root-input').value = root || '';
-  doScan(root, p);
+  if (port) el('port-input').value = port;
+  addProject(root, true);
 };
+window.selectProject = selectProject;
+window.removeProject = removeProject;
 
-// ── 选文件夹（走 Electron 原生对话框；浏览器里无此能力则提示手动粘贴）──
-function pickFolder() {
+// ── 选文件夹（多选；走 Electron 原生对话框）──
+function pickFolders() {
   if (window.codaEvalAPI && typeof window.codaEvalAPI.pickFolder === 'function') {
     window.codaEvalAPI.pickFolder()
-      .then(function(dir) {
-        if (dir) {
-          el('root-input').value = dir;
-          doScan(dir, el('port-input').value);  // 选完直接扫，省一步
-        }
+      .then(function(dirs) {
+        var list = Array.isArray(dirs) ? dirs : (dirs ? [dirs] : []);
+        if (!list.length) return;
+        list.forEach(function(d, i) { addProject(d, false); });
+        // 多选时不自动扫（避免一下打太多），交给「扫全部」；只选一个则直接扫
+        if (list.length === 1) scanProject(list[0]);
+        else setStatus('已加入 ' + list.length + ' 个项目，点「扫全部」开始', 'success');
       })
       .catch(function() { setStatus('选文件夹失败，可手动粘贴目录路径', 'error'); });
   } else {
@@ -1203,32 +1591,79 @@ function pickFolder() {
   }
 }
 
+// ── 选父目录：自动列出里面的多个子项目 ──
+function pickParent() {
+  if (window.codaEvalAPI && typeof window.codaEvalAPI.listSubdirs === 'function') {
+    window.codaEvalAPI.listSubdirs()
+      .then(function(dirs) {
+        var list = Array.isArray(dirs) ? dirs : [];
+        if (!list.length) { setStatus('这个目录下没找到子项目', 'error'); return; }
+        list.forEach(function(d) { addProject(d, false); });
+        setStatus('从父目录列出 ' + list.length + ' 个项目，点「扫全部」开始', 'success');
+      })
+      .catch(function() { setStatus('列子项目失败，可手动粘贴目录路径', 'error'); });
+  } else {
+    setStatus('当前环境不支持，请手动粘贴目录路径后按回车', 'error');
+    el('root-input').focus();
+  }
+}
+
 // ── 事件绑定 ──
-el('pick-btn').addEventListener('click', pickFolder);
-el('scan-btn').addEventListener('click', function() {
-  doScan(el('root-input').value, el('port-input').value);
-});
+el('pick-btn').addEventListener('click', pickFolders);
+el('pick-parent-btn').addEventListener('click', pickParent);
+el('scan-btn').addEventListener('click', scanAll);
 
 el('root-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
-    doScan(el('root-input').value, el('port-input').value);
+    var v = el('root-input').value.trim();
+    if (v) { addProject(v, true); el('root-input').value = ''; }
   }
 });
 
-// ── 读取 URL query 参数，自动填入并触发扫描 ──
+// ── 拖拽：把文件夹拖进 dropzone 加入列表 ──
+(function initDropzone() {
+  var dz = el('dropzone');
+  if (!dz) return;
+  ['dragenter', 'dragover'].forEach(function(ev) {
+    dz.addEventListener(ev, function(e) {
+      e.preventDefault(); e.stopPropagation();
+      dz.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function(ev) {
+    dz.addEventListener(ev, function(e) {
+      e.preventDefault(); e.stopPropagation();
+      if (ev === 'dragleave' && dz.contains(e.relatedTarget)) return;
+      dz.classList.remove('dragover');
+    });
+  });
+  dz.addEventListener('drop', function(e) {
+    var files = e.dataTransfer && e.dataTransfer.files;
+    if (!files || !files.length) return;
+    var added = 0;
+    for (var i = 0; i < files.length; i++) {
+      // Electron 下拖入的文件/文件夹带 .path（绝对路径）
+      var p = files[i].path;
+      if (p) { addProject(p, false); added++; }
+    }
+    if (added) {
+      setStatus('拖入 ' + added + ' 个项目，点「扫全部」或单独点项目扫', 'success');
+    } else {
+      setStatus('没拿到路径——浏览器里拖拽拿不到绝对路径，请用「加项目」按钮', 'error');
+    }
+  });
+})();
+
+// ── 读取 URL query 参数，自动加入并扫描 ──
 (function initFromQuery() {
   try {
     var params = new URLSearchParams(window.location.search);
     var root = params.get('root');
     var port = params.get('port');
-
-    if (port) {
-      el('port-input').value = port;
-    }
+    if (port) el('port-input').value = port;
     if (root) {
-      el('root-input').value = root;
       // 延一帧确保 DOM 就绪
-      setTimeout(function() { doScan(root, port || el('port-input').value); }, 60);
+      setTimeout(function() { addProject(root, true); }, 60);
     }
   } catch (e) {
     // URL API 异常时静默跳过
