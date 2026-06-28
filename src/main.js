@@ -1892,51 +1892,16 @@ ipcMain.on("sound-playback-error", (_event, payload) => {
   sessionLog(`sound playback error phase=${phase || "unknown"} message=${message || "unknown"}`);
 });
 
-// 小哒工作台「选文件夹」：弹原生选目录框，支持一次选多个项目目录。
-// 返回绝对路径数组（取消返回 []）。前端把每个路径加成项目列表的一行。
+// 小哒工作台「选项目目录」：弹原生选目录框，单选。返回绝对路径（取消返回 null）。
+// 选一个目录 = 一个项目；后端扫描时会自动遍历它下面的所有子目录。
 ipcMain.handle("coda-eval:pick-folder", async () => {
   const parent = _codaEval && _codaEval.getWindow && _codaEval.getWindow();
   const result = await electronDialog.showOpenDialog(
     parent && !parent.isDestroyed() ? parent : undefined,
-    {
-      title: translate("openCodaEval"),
-      properties: ["openDirectory", "multiSelections"],
-    }
+    { title: translate("openCodaEval"), properties: ["openDirectory"] }
   );
-  if (result.canceled || !result.filePaths.length) return [];
-  return result.filePaths;
-});
-
-// 「列子项目」：选一个常用父目录，返回它下面一层的子目录（每个当一个项目）。
-// 跳过隐藏目录和常见非项目目录（node_modules 等）。
-ipcMain.handle("coda-eval:list-subdirs", async () => {
-  const parent = _codaEval && _codaEval.getWindow && _codaEval.getWindow();
-  const result = await electronDialog.showOpenDialog(
-    parent && !parent.isDestroyed() ? parent : undefined,
-    {
-      title: translate("openCodaEval"),
-      properties: ["openDirectory"],
-    }
-  );
-  if (result.canceled || !result.filePaths.length) return [];
-  const root = result.filePaths[0];
-  const fs = require("fs");
-  const pathMod = require("path");
-  const SKIP = new Set([
-    "node_modules", ".git", "dist", "build", "__pycache__", ".venv",
-    "venv", ".next", ".idea", ".vscode", "vendor", "target", ".cache",
-  ]);
-  let subdirs = [];
-  try {
-    subdirs = fs
-      .readdirSync(root, { withFileTypes: true })
-      .filter((d) => d.isDirectory() && !d.name.startsWith(".") && !SKIP.has(d.name))
-      .map((d) => pathMod.join(root, d.name));
-  } catch (e) {
-    return [];
-  }
-  // 没有子目录时，把父目录本身当成唯一项目返回
-  return subdirs.length ? subdirs : [root];
+  if (result.canceled || !result.filePaths.length) return null;
+  return result.filePaths[0];
 });
 
 function focusLog(msg) {

@@ -6,8 +6,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("codaEvalAPI", {
-  // 弹原生选文件夹对话框，支持多选，返回选中的绝对路径数组（取消返回 []）
+  // 弹原生选目录对话框（单选），返回选中的绝对路径（取消返回 null）
   pickFolder: () => ipcRenderer.invoke("coda-eval:pick-folder"),
-  // 选一个父目录，返回它下面一层的子目录数组（每个当一个项目）
-  listSubdirs: () => ipcRenderer.invoke("coda-eval:list-subdirs"),
 });

@@ -550,6 +550,13 @@ body {
   margin-top: 4px;
 }
 
+.score-legend {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
 .file-reviews-list {
   display: flex;
   flex-direction: column;
@@ -565,17 +572,58 @@ body {
 .file-review-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--pill);
+  padding: 12px 14px;
+  background: var(--card);
   cursor: pointer;
   user-select: none;
   transition: background 0.12s;
 }
 
 .file-review-header:hover {
-  background: #e8e1d4;
+  background: var(--pill);
 }
+
+.fr-main { flex: 1; min-width: 0; }
+
+.fr-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fr-nick {
+  flex: 1;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fr-file {
+  font-size: 11px;
+  font-family: "Menlo", "Monaco", monospace;
+  color: var(--muted);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fr-summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--ink);
+  margin-top: 8px;
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: var(--pill);
+}
+.fr-summary.high { background: #fff5f5; color: #7a0000; }
+.fr-summary.mid  { background: #fff9f0; color: #7a3c00; }
+.fr-summary.ok   { background: #eef7ef; color: var(--green); }
 
 .file-name {
   flex: 1;
@@ -593,12 +641,13 @@ body {
   align-items: center;
   justify-content: center;
   min-width: 44px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   font-family: Georgia, serif;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .score-badge.green {
@@ -706,6 +755,27 @@ body {
   font-weight: 600;
   color: var(--ink);
   margin-right: 4px;
+}
+
+.issue-level-tag {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 5px;
+  line-height: 1.5;
+}
+.issue-level-tag.high { background: #fdd5d5; color: #7a0000; }
+.issue-level-tag.mid  { background: #fde6c4; color: #7a3c00; }
+.issue-level-tag.low  { background: var(--pill); color: var(--muted); }
+
+.issue-tech {
+  font-size: 11.5px;
+  color: var(--muted);
+  padding-left: 16px;
+  margin-top: 5px;
+  line-height: 1.5;
+  font-family: "Menlo", "Monaco", monospace;
 }
 
 /* ── 项目列表 / 拖拽区 ── */
@@ -841,74 +911,139 @@ body {
   padding-left: 10px;
 }
 
-/* ── ④ 行业映射对照表 ── */
-.mapping-table {
+/* ── ④ 行业映射（业务流程时间线）── */
+.mp-intro {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #fff6ee, #fdeee2);
+  border: 1px solid #f0d4c0;
+  border-radius: 10px;
+}
+.mp-intro b { color: var(--accent); }
+
+.mp-timeline {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
-.mapping-head {
-  display: grid;
-  grid-template-columns: 1fr 18px 1fr;
-  gap: 10px;
-  padding: 0 4px;
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.mapping-row {
-  display: grid;
-  grid-template-columns: 1fr 18px 1fr;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--card);
-}
-.mapping-row:hover { background: var(--pill); }
 
-.mapping-code {
+.mp-step {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 4px;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.mp-step.active { opacity: 1; transform: none; }
+
+/* 左侧时间线节点 */
+.mp-node {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+.mp-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 2.5px solid var(--card);
+  box-shadow: 0 0 0 1.5px var(--border);
+  z-index: 2;
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+.mp-step.active .mp-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--accent), 0 0 0 5px rgba(224,98,58,0.14);
+}
+.mp-line {
+  position: absolute;
+  top: 16px;
+  bottom: -8px;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--border);
+  z-index: 1;
+}
+.mp-seq {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.mp-step.active .mp-seq { opacity: 1; }
+
+/* 右侧内容 */
+.mp-body {
+  padding: 0 0 22px 4px;
   min-width: 0;
 }
-.mapping-code .mp-path {
-  font-family: "Menlo", "Monaco", monospace;
-  font-size: 12px;
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.mapping-code .mp-cats {
-  font-size: 10.5px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-.mapping-arrow {
-  text-align: center;
-  color: var(--accent);
+.mp-industry {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 17px;
   font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
 }
-
-.mapping-terms {
+.mp-role {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.mp-codecard {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--pill);
+  border: 1px solid var(--border);
+  border-radius: 9px;
 }
-.mp-term {
-  background: var(--score-orange-bg);
-  color: var(--score-orange-fg);
-  border-radius: 14px;
+.mp-arrow {
+  font-size: 11px;
+  color: var(--muted);
+}
+.mp-codename {
+  font-family: "Menlo", "Monaco", monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   padding: 2px 9px;
-  font-size: 12px;
-  font-weight: 500;
 }
-
-@media (max-width: 560px) {
-  .mapping-head, .mapping-row { grid-template-columns: 1fr; gap: 4px; }
-  .mapping-arrow { display: none; }
+.mp-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-basis: 100%;
+  margin-top: 2px;
+}
+.mp-file {
+  font-family: "Menlo", "Monaco", monospace;
+  font-size: 11px;
+  color: var(--muted);
 }
 </style>
 </head>
@@ -918,18 +1053,14 @@ body {
 <div class="page-header">
   <div class="page-title">🐾 小哒 Coda · 工作台</div>
   <div class="scan-bar">
-    <button id="pick-btn" class="btn-pick" title="选择一个或多个项目文件夹（可多选）">📁 加项目</button>
-    <button id="pick-parent-btn" class="btn-pick" title="选一个常用父目录，自动列出里面的多个项目">📂 选父目录</button>
+    <button id="pick-btn" class="btn-pick" title="选一个项目目录，自动扫描它下面的所有内容">📁 选项目目录</button>
     <input
       id="root-input"
       class="scan-input"
       type="text"
-      placeholder="或粘贴一个本地项目目录后回车加入列表"
+      placeholder="或粘贴一个本地项目目录后回车"
     />
-    <div class="port-group">
-      <span>端口</span>
-      <input id="port-input" class="port-input" type="text" value="8848" />
-    </div>
+    <input id="port-input" type="hidden" value="8848" />
     <button id="scan-btn" class="btn-scan">扫全部</button>
   </div>
   <div id="status-line" class="status-line"></div>
@@ -944,7 +1075,7 @@ body {
   <div id="dropzone" class="dropzone">
     <div id="projects-list" class="projects-list"></div>
     <div id="dropzone-hint" class="dropzone-hint">
-      把项目文件夹拖进来，或点上方「加项目 / 选父目录」。选一个项目看它的详情 ↓
+      把项目文件夹拖进来，或点上方「选项目目录」。每选一个目录加一行，选同一个会刷新 ↓
     </div>
   </div>
 </div>
@@ -1264,38 +1395,82 @@ function copySnippet(idx, btn) {
   });
 }
 
-// ── 渲染 ③ 项目优化建议 ──
+// 给代码文件配「行业人话名」——复用行业映射卡的 concepts（数据打通，不额外调 LLM）
+function industryNameForFile(filePath) {
+  var concepts = _scanResult && _scanResult.mapping && _scanResult.mapping.concepts;
+  if (!concepts || !filePath) return '';
+  var base = baseName(filePath);
+  for (var i = 0; i < concepts.length; i++) {
+    var files = concepts[i].files || [];
+    for (var j = 0; j < files.length; j++) {
+      // 文件名或路径尾部匹配即认为是同一文件
+      if (files[j] && (files[j] === filePath || baseName(files[j]) === base
+          || filePath.indexOf(files[j]) >= 0 || files[j].indexOf(filePath) >= 0)) {
+        return concepts[i].industryName || '';
+      }
+    }
+  }
+  return '';
+}
+
+function gradeLabel(score) {
+  if (typeof score !== 'number') return '待评';
+  if (score >= 90) return '优秀';
+  if (score >= 70) return '良好';
+  return '需改';
+}
+
+// ── 渲染 ① 项目评分（跑分软件式明细：人话名 + 等级 + 折叠态露结论）──
 function renderReviews(reviews) {
   if (!reviews || !reviews.length) {
-    el('reviews-content').innerHTML = '<div class="placeholder">扫描后这里会列出各文件跑分与改进建议</div>';
+    el('reviews-content').innerHTML = '<div class="placeholder">选一个项目并扫描后，这里会列出各文件跑分与改进建议</div>';
     return;
   }
 
   var total = reviews.reduce(function(s, r) { return s + (r.score || 0); }, 0);
   var avg = Math.round(total / reviews.length);
-  var avgClass = scoreClass(avg);
   var avgColorStr = scoreColor(avg);
 
   var html = '<div class="avg-score-hero">'
     + '<div class="avg-score-number" style="color:' + avgColorStr + '">' + avg + '</div>'
-    + '<div><div class="avg-score-label">平均得分</div>'
-      + '<div style="font-size:12px;color:var(--muted)">共 ' + reviews.length + ' 个文件</div></div>'
+    + '<div><div class="avg-score-label">平均得分 · ' + gradeLabel(avg) + '</div>'
+      + '<div style="font-size:12px;color:var(--muted)">检了 ' + reviews.length + ' 个关键文件</div></div>'
     + '</div>'
+    + '<div class="score-legend">优秀 90+ · 良好 70-89 · 需改 &lt;70</div>'
     + '<div class="file-reviews-list">';
 
   reviews.forEach(function(r, rIdx) {
     var score = r.score != null ? r.score : '--';
     var cls   = typeof score === 'number' ? scoreClass(score) : 'orange';
+    var grade = gradeLabel(typeof score === 'number' ? score : null);
     var issues = r.issues || [];
     var fileId = 'file-issues-' + rIdx;
 
+    // 人话名优先用 review 自带的 nickname（跟文件 100% 对得上），退而求映射概念名，再退文件名
+    var nick = r.nickname || industryNameForFile(r.file) || baseName(r.file || '');
+    // 折叠态露最重一条问题（按 high>mid>low 取）作为一句结论
+    var top = null, rank = { high: 3, mid: 2, low: 1 };
+    issues.forEach(function(it) {
+      var lv = (it.redlineLevel || 'low').toLowerCase();
+      if (!top || (rank[lv] || 1) > (rank[(top.redlineLevel || 'low').toLowerCase()] || 1)) top = it;
+    });
+    var topLevel = top ? (top.redlineLevel || 'low').toLowerCase() : '';
+    if (topLevel !== 'high' && topLevel !== 'mid') topLevel = 'low';
+
     html += '<div class="file-review-item">'
       + '<div class="file-review-header" onclick="toggleFileIssues(' + rIdx + ')">'
-        + '<span class="file-name" title="' + escHtml(r.file || '') + '">'
-            + escHtml(r.file || '未知文件')
-          + '</span>'
-        + '<span class="score-badge ' + cls + '">' + score + '</span>'
-        + '<span class="expand-arrow" id="arrow-' + rIdx + '">▶</span>'
+        + '<div class="fr-main">'
+          + '<div class="fr-top">'
+            + '<span class="fr-nick">📄 ' + escHtml(nick) + '</span>'
+            + '<span class="score-badge ' + cls + '">' + score + (typeof score === 'number' ? ' ' + grade : '') + '</span>'
+            + '<span class="expand-arrow" id="arrow-' + rIdx + '">▶</span>'
+          + '</div>'
+          + '<div class="fr-file" title="' + escHtml(r.file || '') + '">' + escHtml(r.file || '未知文件') + '</div>'
+          + (top
+              ? '<div class="fr-summary ' + topLevel + '"><span class="issue-dot ' + topLevel + '"></span>'
+                  + escHtml(top.problem || '') + '</div>'
+              : '<div class="fr-summary ok">✓ 没发现明显问题，踏实干活</div>')
+        + '</div>'
       + '</div>'
       + '<div class="file-issues" id="' + fileId + '">';
 
@@ -1303,29 +1478,28 @@ function renderReviews(reviews) {
       issues.forEach(function(issue) {
         var level = (issue.redlineLevel || 'low').toLowerCase();
         if (level !== 'high' && level !== 'mid') level = 'low';
-
-        var locStr = '';
-        if (issue.loc && issue.loc.line) {
-          locStr = escHtml(issue.loc.file || r.file || '') + ':' + issue.loc.line;
-        }
+        var levelTxt = { high: '红线', mid: '注意', low: '提示' }[level];
 
         html += '<div class="issue-item ' + level + '">'
           + '<div class="issue-header">'
             + '<span class="issue-dot ' + level + '"></span>'
+            + '<span class="issue-level-tag ' + level + '">' + levelTxt + '</span>'
             + '<span class="issue-problem">' + escHtml(issue.problem || '—') + '</span>'
-            + (locStr ? '<span class="issue-loc">' + locStr + '</span>' : '')
           + '</div>';
 
         if (issue.fix) {
           html += '<div class="issue-fix">'
-            + '<span class="issue-fix-label">改法：</span>'
+            + '<span class="issue-fix-label">怎么改：</span>'
             + escHtml(issue.fix)
             + '</div>';
+        }
+        if (issue.techDetail) {
+          html += '<div class="issue-tech">技术细节：' + escHtml(issue.techDetail) + '</div>';
         }
         html += '</div>';
       });
     } else {
-      html += '<div class="placeholder" style="padding:12px 0">该文件暂无具体问题记录</div>';
+      html += '<div class="placeholder" style="padding:12px 0">该文件没发现明显问题</div>';
     }
 
     html += '</div></div>';
@@ -1345,38 +1519,71 @@ function toggleFileIssues(idx) {
   if (arrow) arrow.classList.toggle('open', !isOpen);
 }
 
-// ── 渲染 ④ 行业映射（代码文件 ↔ 行业行话 对照表）──
+// ── 渲染 ④ 行业映射（业务流程时间线：行业概念 → 对应代码，滚动逐步点亮）──
 function renderMapping(mapping) {
-  var rows = mapping && mapping.rows;
-  if (!rows || !rows.length) {
-    el('mapping-content').innerHTML = mapping && mapping.industry === '未知'
+  var concepts = mapping && mapping.concepts;
+  var box = el('mapping-content');
+  if (!concepts || !concepts.length) {
+    box.innerHTML = mapping && mapping.industry === '未知'
       ? '<div class="placeholder">行业未识别，先在「人设跟随」里确认行业，再来看映射</div>'
-      : '<div class="placeholder">扫描后，这里把项目里的代码文件翻译成你那行的行话</div>';
+      : '<div class="placeholder">扫描后，这里用你那行的话讲清楚：项目里几个关键概念分别在干什么</div>';
     return;
   }
 
-  var html = '<div class="mapping-table">'
-    + '<div class="mapping-head">'
-      + '<span>代码文件 / 模块</span><span></span>'
-      + '<span>' + escHtml(mapping.industry || '行业') + '的话讲</span>'
-    + '</div>';
+  var industry = mapping.industry || '你这行';
+  var intro = '<div class="mp-intro">把这个项目里 <b>' + concepts.length + '</b> 个关键概念，'
+    + '按业务发生的先后，翻译成 <b>' + escHtml(industry) + '</b> 的话讲给你听 ——'
+    + '看懂它，你就知道这类需求该怎么让 AI 落地。</div>';
 
-  rows.forEach(function(r) {
-    var catsTxt = (r.categories || []).join(' · ');
-    var termsHtml = (r.terms || []).map(function(t) {
-      return '<span class="mp-term">' + escHtml(t) + '</span>';
-    }).join('');
-    html += '<div class="mapping-row">'
-      + '<div class="mapping-code">'
-        + '<div class="mp-path" title="' + escHtml(r.path || '') + '">' + escHtml(r.path || r.module || '') + '</div>'
-        + (catsTxt ? '<div class="mp-cats">' + escHtml(catsTxt) + '</div>' : '')
+  var steps = '<div class="mp-timeline">';
+  concepts.forEach(function(c, i) {
+    var files = (c.files || []).filter(Boolean);
+    var filesHtml = files.length
+      ? '<div class="mp-files">' + files.map(function(f) {
+          return '<span class="mp-file">📄 ' + escHtml(f) + '</span>';
+        }).join('') + '</div>'
+      : '';
+    steps += '<div class="mp-step" data-mp-idx="' + i + '">'
+      + '<div class="mp-node"><span class="mp-dot"></span>'
+        + (i < concepts.length - 1 ? '<span class="mp-line"></span>' : '')
+        + '<span class="mp-seq">' + (i + 1) + '</span></div>'
+      + '<div class="mp-body">'
+        + '<div class="mp-industry">' + escHtml(c.industryName || '') + '</div>'
+        + '<div class="mp-role">' + escHtml(c.role || '') + '</div>'
+        + '<div class="mp-codecard">'
+          + '<span class="mp-arrow">在代码里就是</span>'
+          + '<span class="mp-codename">' + escHtml(c.codeName || '') + '</span>'
+          + filesHtml
+        + '</div>'
       + '</div>'
-      + '<div class="mapping-arrow">→</div>'
-      + '<div class="mapping-terms">' + termsHtml + '</div>'
     + '</div>';
   });
-  html += '</div>';
-  el('mapping-content').innerHTML = html;
+  steps += '</div>';
+
+  box.innerHTML = intro + steps;
+
+  // 滚动逐步点亮（IntersectionObserver，零依赖）；不支持则全部直接点亮
+  var stepEls = box.querySelectorAll('.mp-step');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(en) {
+        if (en.isIntersecting) {
+          en.target.classList.add('active');
+          io.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.35 });
+    stepEls.forEach(function(s) { io.observe(s); });
+    // 兜底：首屏内的若没触发，下一帧补点亮
+    setTimeout(function() {
+      stepEls.forEach(function(s) {
+        var r = s.getBoundingClientRect();
+        if (r.top < window.innerHeight) s.classList.add('active');
+      });
+    }, 120);
+  } else {
+    stepEls.forEach(function(s) { s.classList.add('active'); });
+  }
 }
 
 // ── ④人设跟随：拉取跨项目累积的人设摘要，显示在顶部 ──
@@ -1403,14 +1610,20 @@ function loadPersona(port) {
 }
 
 // ── 项目列表：增 / 删 / 选 / 渲染 ──
+function normRoot(root) {
+  // 归一化路径，便于「相同目录」判断：去尾部斜杠
+  return String(root || '').trim().replace(/[\/\\]+$/, '');
+}
+
 function addProject(root, autoScan) {
-  root = (root || '').trim();
+  root = normRoot(root);
   if (!root) return;
-  if (findProject(root)) {        // 已在列表里：选中它，必要时扫
+  if (findProject(root)) {        // 相同目录：合并 = 选中并重新扫描刷新
     selectProject(root);
-    if (autoScan && findProject(root).status === 'idle') scanProject(root);
+    if (autoScan) scanProject(root);
     return;
   }
+  // 不同目录：新增一行
   _projects.push({ root: root, name: baseName(root), status: 'idle', result: null, error: '' });
   renderProjects();
   selectProject(root);
@@ -1572,45 +1785,25 @@ window.codaScan = function(root, port) {
 window.selectProject = selectProject;
 window.removeProject = removeProject;
 
-// ── 选文件夹（多选；走 Electron 原生对话框）──
-function pickFolders() {
+// ── 选项目目录（单选；选一个目录=一个项目=一行，后端自动遍历它下面所有子目录）──
+function pickFolder() {
   if (window.codaEvalAPI && typeof window.codaEvalAPI.pickFolder === 'function') {
     window.codaEvalAPI.pickFolder()
       .then(function(dirs) {
-        var list = Array.isArray(dirs) ? dirs : (dirs ? [dirs] : []);
-        if (!list.length) return;
-        list.forEach(function(d, i) { addProject(d, false); });
-        // 多选时不自动扫（避免一下打太多），交给「扫全部」；只选一个则直接扫
-        if (list.length === 1) scanProject(list[0]);
-        else setStatus('已加入 ' + list.length + ' 个项目，点「扫全部」开始', 'success');
+        // 主进程返回数组；取第一个（对话框配单选）
+        var dir = Array.isArray(dirs) ? dirs[0] : dirs;
+        if (!dir) return;
+        addProject(dir, true);   // 选完直接扫；相同目录会刷新
       })
-      .catch(function() { setStatus('选文件夹失败，可手动粘贴目录路径', 'error'); });
+      .catch(function() { setStatus('选目录失败，可手动粘贴路径', 'error'); });
   } else {
-    setStatus('当前环境不支持选文件夹，请手动粘贴目录路径后按回车', 'error');
-    el('root-input').focus();
-  }
-}
-
-// ── 选父目录：自动列出里面的多个子项目 ──
-function pickParent() {
-  if (window.codaEvalAPI && typeof window.codaEvalAPI.listSubdirs === 'function') {
-    window.codaEvalAPI.listSubdirs()
-      .then(function(dirs) {
-        var list = Array.isArray(dirs) ? dirs : [];
-        if (!list.length) { setStatus('这个目录下没找到子项目', 'error'); return; }
-        list.forEach(function(d) { addProject(d, false); });
-        setStatus('从父目录列出 ' + list.length + ' 个项目，点「扫全部」开始', 'success');
-      })
-      .catch(function() { setStatus('列子项目失败，可手动粘贴目录路径', 'error'); });
-  } else {
-    setStatus('当前环境不支持，请手动粘贴目录路径后按回车', 'error');
+    setStatus('当前环境不支持选目录，请手动粘贴路径后按回车', 'error');
     el('root-input').focus();
   }
 }
 
 // ── 事件绑定 ──
-el('pick-btn').addEventListener('click', pickFolders);
-el('pick-parent-btn').addEventListener('click', pickParent);
+el('pick-btn').addEventListener('click', pickFolder);
 el('scan-btn').addEventListener('click', scanAll);
 
 el('root-input').addEventListener('keydown', function(e) {
