@@ -1,4 +1,7 @@
 const { app, BrowserWindow, screen, ipcMain, globalShortcut, nativeTheme, dialog, shell, nativeImage, powerSaveBlocker, clipboard } = require("electron");
+// 应用名：dev 模式（electron .）下 Dock/菜单栏默认显示 "Electron"，
+// 在最早期 setName 覆盖掉。打包名由 package.json build.productName 决定。
+app.setName("小哒 Coda");
 // ── Linux/Wayland: relaunch under XWayland so the pet is draggable (issue #441) ──
 // Native Wayland ignores client-side window positioning and blocks global cursor
 // queries, so the pet spawns centered, can't be dragged, and has no tracking;
