@@ -132,15 +132,22 @@ module.exports = function initMenu(ctx) {
   // ── System tray ──
   function createTray() {
     if (ctx.tray) return;
-    let icon;
-    if (isMac) {
-      icon = nativeImage.createFromPath(path.join(__dirname, "../assets/tray-iconTemplate.png"));
-      icon.setTemplateImage(true);
-    } else {
-      icon = nativeImage.createFromPath(path.join(__dirname, "../assets/tray-icon.png")).resize({ width: 32, height: 32 });
-    }
+    // 静止托盘图标用彩色小哒（更显眼）。menu-bar 合适尺寸 ~18px；
+    // 不调 setTemplateImage（那会强制渲染成单色脸轮廓，不够辨识）。
+    const colorIcon = nativeImage
+      .createFromPath(path.join(__dirname, "../assets/tray-icon-flash.png"))
+      .resize({ width: 18, height: 18 });
+    const icon = !colorIcon.isEmpty()
+      ? colorIcon
+      // 兜底：彩色图缺失时退回原模板图标
+      : (() => {
+          const fallback = nativeImage.createFromPath(
+            path.join(__dirname, "../assets/tray-iconTemplate.png"));
+          if (isMac) fallback.setTemplateImage(true);
+          return fallback;
+        })();
     ctx.tray = new Tray(icon);
-    ctx.tray.setToolTip("Clawd Desktop Pet");
+    ctx.tray.setToolTip("小哒 Coda");
     buildTrayMenu();
   }
 

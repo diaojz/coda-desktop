@@ -1096,9 +1096,15 @@ function flashTaskbar() {
   const tray = _menu.getTray ? _menu.getTray() : null;
   if (!tray) return;
 
-  // Cache the normal icon on first call
+  // Cache the normal (resting) icon on first call.
+  // 用彩色小哒做静止图标（与 createTray 一致），闪动停下后回到彩色小哒，不再变单色。
   if (!trayFlashNormalIcon) {
-    if (process.platform === "darwin") {
+    const colorIcon = nativeImage
+      .createFromPath(path.join(__dirname, "../assets/tray-icon-flash.png"))
+      .resize({ width: 18, height: 18 });
+    if (!colorIcon.isEmpty()) {
+      trayFlashNormalIcon = colorIcon;
+    } else if (process.platform === "darwin") {
       trayFlashNormalIcon = nativeImage.createFromPath(
         path.join(__dirname, "../assets/tray-iconTemplate.png")
       );
