@@ -6,7 +6,7 @@
   content="default-src 'none';
            style-src 'unsafe-inline';
            script-src 'unsafe-inline' 'self';
-           connect-src http://127.0.0.1:* http://localhost:*;
+           connect-src https: http://127.0.0.1:* http://localhost:*;
            img-src 'self' data:">
 <title>小哒 Coda · 工作台</title>
 <style>
@@ -1122,6 +1122,37 @@ body {
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════
+// 云端配置（部署后只改这两行即可）
+// ══════════════════════════════════════════════════════
+// 云端后端地址（改成你部署后的真实域名）
+var CODA_CLOUD_API   = 'https://coda-agent.onrender.com';
+// 访问令牌（若后端开了鉴权就填；不需要就留空字符串）
+var CODA_ACCESS_TOKEN = '';
+// ══════════════════════════════════════════════════════
+
+// ── 统一后端地址入口 ──
+// 优先级：运行时覆盖（Electron 主进程注入）> ?apiBase= query > ?port= query > 云端默认
+var _apiBaseOverride = ''; // 由 window.codaScan / initFromQuery 在运行时写入
+function getApiBase() {
+  if (_apiBaseOverride) return _apiBaseOverride;
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var apiBaseParam = params.get('apiBase');
+    if (apiBaseParam) return apiBaseParam.replace(/\/+$/, '');
+    var portParam = params.get('port');
+    if (portParam) return 'http://127.0.0.1:' + portParam;
+  } catch (e) { /* URL API 异常时静默跳过 */ }
+  return CODA_CLOUD_API;
+}
+
+// ── 带可选 token 的 headers 构建（保留原有 Content-Type）──
+function buildHeaders(extra) {
+  var h = Object.assign({}, extra || {});
+  if (CODA_ACCESS_TOKEN) h['x-coda-token'] = CODA_ACCESS_TOKEN;
+  return h;
+}
+
 // ── 全局状态（多项目：选一个看一个）──
 var _currentIndustry = '';   // 当前行业（可被用户手改）
 var _scanResult     = null;  // 当前选中项目的扫描结果
@@ -1296,13 +1327,12 @@ function saveIndustry(val) {
 function persistProfileOverride() {
   var root = _activeRoot;
   if (!root) return;
-  var port = getPort();
   var override = { industry: _currentIndustry };
   // 行业改了，红线也跟着换成该行业的（让评价跟着走）——交给后端按行业补默认红线，
   // 这里只传 industry；若将来支持手编红线，再带上 redlines。
-  fetch('http://127.0.0.1:' + port + '/profile/override', {
+  fetch(getApiBase() + '/profile/override', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: buildHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ root: root, override: override, editedAt: new Date().toISOString() })
   })
   .then(function(res) { return res.json(); })
@@ -1587,9 +1617,8 @@ function renderMapping(mapping) {
 }
 
 // ── ④人设跟随：拉取跨项目累积的人设摘要，显示在顶部 ──
-function loadPersona(port) {
-  port = port || '8848';
-  fetch('http://127.0.0.1:' + port + '/persona')
+function loadPersona() {
+  fetch(getApiBase() + '/persona', { headers: buildHeaders() })
     .then(function(res) { return res.json(); })
     .then(function(d) {
       var p = d && d.persona;
@@ -1714,15 +1743,14 @@ function clearDetail() {
 function scanProject(root) {
   var p = findProject(root);
   if (!p) return Promise.resolve();
-  var port = getPort();
   p.status = 'scanning';
   p.error = '';
   renderProjects();
   if (root === _activeRoot) setStatus('<span class="spinner"></span> 扫描「' + escHtml(p.name) + '」中…');
 
-  return fetch('http://127.0.0.1:' + port + '/scan', {
+  return fetch(getApiBase() + '/scan', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: buildHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ root: root })
   })
   .then(function(res) {
@@ -1743,7 +1771,7 @@ function scanProject(root) {
       setStatus('✓ 「' + escHtml(p.name) + '」扫描完成（' + (fc != null ? fc + ' 个文件' : '') + '）', 'success');
       renderDetail(data);
     }
-    loadPersona(port);
+    loadPersona();
   })
   .catch(function(err) {
     p.status = 'error';
@@ -1753,7 +1781,7 @@ function scanProject(root) {
     if (root === _activeRoot) {
       if (isNetErr) {
         setStatus(
-          '评价服务没连上，请先在 agent/ 目录跑 <code style="font-family:monospace;background:var(--pill);padding:1px 5px;border-radius:4px;">python3 server.py ' + port + '</code>',
+          '正在连接小哒 Coda 云端服务，请稍候重试（若持续失败可能是服务休眠中，刷新即可唤醒）',
           'error'
         );
       } else {
@@ -1779,7 +1807,10 @@ function scanAll() {
 
 // ── 外部触发接口（供 Electron 主进程调用） ──
 window.codaScan = function(root, port) {
-  if (port) el('port-input').value = port;
+  if (port) {
+    el('port-input').value = port;
+    _apiBaseOverride = 'http://127.0.0.1:' + port; // 让 getApiBase() 走本地
+  }
   addProject(root, true);
 };
 window.selectProject = selectProject;
