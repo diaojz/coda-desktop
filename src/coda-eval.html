@@ -1123,27 +1123,30 @@ body {
 
 <script>
 // ══════════════════════════════════════════════════════
-// 云端配置（部署后只改这两行即可）
+// 后端配置（改这几行即可切换连本地 / 连云端）
 // ══════════════════════════════════════════════════════
-// 云端后端地址（改成你部署后的真实域名）
-var CODA_CLOUD_API   = 'https://coda-agent.onrender.com';
-// 访问令牌（若后端开了鉴权就填；不需要就留空字符串）
-var CODA_ACCESS_TOKEN = '';
+// 默认连本地后端（demo 主力：现场起 python server.py，扫本机真实项目，gpt-5.5 飞快）
+var CODA_LOCAL_API   = 'http://127.0.0.1:8848';
+// 云端后端地址（提交物公网链接 / 评委自助用；带 ?apiBase=cloud 可一键切到这里）
+var CODA_CLOUD_API   = 'https://code-agent-sdoy.onrender.com';
+// 访问令牌（本地和云端后端都开了护栏，要和后端 CODA_ACCESS_TOKEN 一致）
+var CODA_ACCESS_TOKEN = 'coda-8618e57cb9f37501';
 // ══════════════════════════════════════════════════════
 
 // ── 统一后端地址入口 ──
-// 优先级：运行时覆盖（Electron 主进程注入）> ?apiBase= query > ?port= query > 云端默认
+// 优先级：运行时覆盖 > ?apiBase= query > ?apiBase=cloud 切云端 > ?port= query > 本地默认
 var _apiBaseOverride = ''; // 由 window.codaScan / initFromQuery 在运行时写入
 function getApiBase() {
   if (_apiBaseOverride) return _apiBaseOverride;
   try {
     var params = new URLSearchParams(window.location.search);
     var apiBaseParam = params.get('apiBase');
-    if (apiBaseParam) return apiBaseParam.replace(/\/+$/, '');
+    if (apiBaseParam === 'cloud') return CODA_CLOUD_API;       // ?apiBase=cloud → 一键切云端
+    if (apiBaseParam) return apiBaseParam.replace(/\/+$/, ''); // ?apiBase=http://… → 自定义
     var portParam = params.get('port');
-    if (portParam) return 'http://127.0.0.1:' + portParam;
+    if (portParam) return 'http://127.0.0.1:' + portParam;     // ?port=8849 → 换本地端口
   } catch (e) { /* URL API 异常时静默跳过 */ }
-  return CODA_CLOUD_API;
+  return CODA_LOCAL_API;                                       // 默认：本地 8848
 }
 
 // ── 带可选 token 的 headers 构建（保留原有 Content-Type）──
@@ -1781,7 +1784,7 @@ function scanProject(root) {
     if (root === _activeRoot) {
       if (isNetErr) {
         setStatus(
-          '正在连接小哒 Coda 云端服务，请稍候重试（若持续失败可能是服务休眠中，刷新即可唤醒）',
+          '小哒 Coda 后端正在唤醒，请稍候重试（App 内置后端首次启动约需几秒，稍等即可）',
           'error'
         );
       } else {

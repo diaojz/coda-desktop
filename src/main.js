@@ -89,6 +89,7 @@ const initPermission = require("./permission");
 const { registerPermissionIpc } = initPermission;
 const { createTelegramApprovalSidecar } = require("./telegram-approval-sidecar");
 const telegramApprovalSettings = require("./telegram-approval-settings");
+const { createCodaBackendSidecar } = require("./coda-backend-sidecar");
 const {
   buildTelegramApprovalStatus,
   isNativeTelegramApprovalSelected,
@@ -293,6 +294,7 @@ let agentRuntime = null;
 let floatingWindowRuntime = null;
 let codexPetMain = null;
 let telegramApprovalSidecar = null;
+let codaBackendSidecar = null;
 let telegramApprovalSyncPromise = Promise.resolve();
 let telegramApprovalConfigSignature = "";
 let telegramApprovalTokenRevision = 0;
@@ -3864,6 +3866,20 @@ if (!gotTheLock) {
       console.warn("Clawd: failed to auto-install terminal-focus extension:", err.message);
     }
 
+    // Coda 后端 sidecar：spawn Python 后端，等就绪后工作台才能连上
+    // 冷启动约 10 秒（onedir + macOS 校验），health 轮询最多等 20 秒
+    // 启动失败只 log，不阻塞 App（桌宠没后端也能打开）
+    codaBackendSidecar = createCodaBackendSidecar({
+      isPackaged: app.isPackaged,
+      log: (level, msg, data) => {
+        if (data) console.log(`[coda-backend] [${level}]`, msg, data);
+        else console.log(`[coda-backend] [${level}]`, msg);
+      },
+    });
+    codaBackendSidecar.start().catch((err) => {
+      console.warn("Clawd: coda-backend sidecar failed to start:", err && err.message);
+    });
+
     // Auto-updater: setup event handlers (user triggers check via tray menu)
     setupAutoUpdater();
     // #329: reconcile any stale pending-update entry (e.g. user installed
@@ -3882,6 +3898,7 @@ if (!gotTheLock) {
     globalShortcut.unregisterAll();
     void settingsSizePreviewSession.cleanup();
     stopTelegramApprovalSidecar();
+    if (codaBackendSidecar) codaBackendSidecar.stop();
     if (typeof unsubscribeHardwareBuddySettings === "function") {
       unsubscribeHardwareBuddySettings();
       unsubscribeHardwareBuddySettings = null;
