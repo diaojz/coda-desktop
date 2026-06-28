@@ -15,6 +15,7 @@ npm run build:win:x64
 npm run build:win:arm64
 npm run build:win:all
 npm run build:mac
+npm run build:mac:arm64
 npm run build:linux
 npm run build:all
 npm install
@@ -150,6 +151,7 @@ Copilot CLI 同步走 `<COPILOT_HOME 或 ~/.copilot>/hooks/hooks.json`，marker-
 - 禁用 agent 不应卸载 hooks / plugins / extensions：只停止对应 monitor、清理 session / bubble、让 HTTP hook 入口快速 fallback；重新启用未安装 agent 不触发本机 integration sync。卸载集成必须走 Settings Agent 页的 Uninstall / 对应 uninstall 命令，并同时清掉 `integrationInstalled`
 - Kiro 的 `sessionId="default"` 会复用；session alias key 必须按 cwd scope 区分，同时保留旧 `local|kiro-cli|default` 只读 fallback
 - Windows NSIS release 必须产出明确架构的 x64 / ARM64 安装包：`win.artifactName` 保留 `${arch}`，`nsis.buildUniversalInstaller` 保持 `false`
+- coda-agent（Python 评价后端）跨平台焊接：mac/linux 走 `scripts/build-coda-backend.sh`（PyInstaller，**必须 Python 3.12**）出单一二进制；**Windows 不走 PyInstaller**（不能交叉编译）——后端纯标准库零依赖，故焊「嵌入式 Python（embeddable zip）+ 平铺源码」到 `bin/coda-agent/windows-x64/`，`src/coda-backend-sidecar.js` 的 `spawnSpec()` 按平台分流：win32 spawn `python.exe server.py`，其它平台 spawn 单一二进制。`build:mac` 默认双架构会因缺 `cc-connect-clawd` 的 darwin-x64 而 prebuild 失败，单架构用 `build:mac:arm64`
 - 资源路径统一用 `path.join(__dirname, ...)`
 - 需要编辑发布素材时，先复制到 `assets/source/` 再改，不要直接改工作素材来源不明的文件
 - `assets/source/cloudling-pointer-bridge/` 是 Cloudling 指针桥素材的保留源文件目录；运行时逻辑已内联进主题 SVG，不要把这个 source 目录当临时文件清理

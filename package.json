@@ -11,6 +11,7 @@
     "build:win:arm64": "electron-builder --win nsis:arm64",
     "build:win:all": "electron-builder --win nsis:x64 nsis:arm64",
     "build:mac": "electron-builder --mac",
+    "build:mac:arm64": "electron-builder --mac dmg --arm64",
     "build:linux": "electron-builder --linux",
     "build:all": "electron-builder --win --mac --linux",
     "fetch:sidecars": "node scripts/fetch-sidecar-binaries.js",

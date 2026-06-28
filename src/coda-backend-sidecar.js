@@ -51,7 +51,20 @@ function archName(arch) {
 }
 
 function binaryName(platform) {
-  return platform === "win32" ? `${BINARY_BASENAME}.exe` : BINARY_BASENAME;
+  // Windows 不打 PyInstaller 二进制（mac 上无法交叉编译）。后端是纯标准库零依赖，
+  // 故 Windows 包焊「嵌入式 Python + 源码」：sidecar 目录里放 python.exe + server.py，
+  // 启动入口就是 python.exe。其它平台仍是单一二进制 coda-agent。
+  if (platform === "win32") return "python.exe";
+  return BINARY_BASENAME;
+}
+
+// 启动命令与参数：Windows 用 python.exe 跑同目录 server.py；其它平台直接执行二进制。
+function spawnSpec(platform, resolvedPath) {
+  if (platform === "win32") {
+    const serverPy = path.join(path.dirname(resolvedPath), "server.py");
+    return { command: resolvedPath, args: [serverPy] };
+  }
+  return { command: resolvedPath, args: [] };
 }
 
 /**
@@ -181,9 +194,12 @@ class CodaBackendSidecar {
     });
 
     try {
+      // 端口走 env PORT，不传 argv。Windows 下 command=python.exe、args=[server.py]；
+      // 其它平台 command=二进制、args=[]。
+      const spec = spawnSpec(this.platform, this._resolvedBinaryPath);
       this._child = childProcess.spawn(
-        this._resolvedBinaryPath,
-        [], // 端口走 env PORT，不传 argv
+        spec.command,
+        spec.args,
         {
           env: this._buildEnv(),
           stdio: ["ignore", "pipe", "pipe"],
