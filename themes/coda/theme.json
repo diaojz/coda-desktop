@@ -28,6 +28,30 @@
     "visibleHeightRatio": 0.44,
     "baselineBottomRatio": 0.05
   },
+  "hitBoxes": {
+    "default": {
+      "x": -9.5,
+      "y": -21,
+      "w": 34,
+      "h": 34
+    },
+    "sleeping": {
+      "x": -9.5,
+      "y": -5.7,
+      "w": 34,
+      "h": 18.7
+    },
+    "wide": {
+      "x": -11.5,
+      "y": -23,
+      "w": 38,
+      "h": 38
+    }
+  },
+  "sleepingHitboxFiles": [
+    "coda-sleeping.apng",
+    "coda-sleeping.svg"
+  ],
   "eyeTracking": {
     "enabled": false,
     "states": [],
