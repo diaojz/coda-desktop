@@ -216,6 +216,13 @@ module.exports = function initMenu(ctx) {
           if (typeof ctx.openCodaEval === "function") ctx.openCodaEval();
         },
       },
+      {
+        // 知识图谱：App 内嵌窗口打开（仿 openCodaEval），窗口加载 coda Node 服务的 graph.html。
+        label: t("openKnowledgeGraph"),
+        click: () => {
+          if (typeof ctx.openKnowledgeGraph === "function") ctx.openKnowledgeGraph();
+        },
+      },
       buildAutoApproveMenuItem(),
     ];
 
@@ -433,6 +440,13 @@ module.exports = function initMenu(ctx) {
         label: t("openCodaEval"),
         click: () => {
           if (typeof ctx.openCodaEval === "function") ctx.openCodaEval();
+        },
+      },
+      {
+        // 知识图谱：App 内嵌窗口打开（仿 openCodaEval），窗口加载 coda Node 服务的 graph.html。
+        label: t("openKnowledgeGraph"),
+        click: () => {
+          if (typeof ctx.openKnowledgeGraph === "function") ctx.openKnowledgeGraph();
         },
       },
       {

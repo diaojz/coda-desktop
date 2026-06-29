@@ -1681,6 +1681,17 @@ const _codaEval = require("./coda-eval")({
   iconPath: settingsWindowRuntime.getIconPath(),
 });
 
+// 知识图谱窗口：App 内嵌 BrowserWindow，加载 coda（Node）服务的 graph.html（默认 :8849）。
+const _knowledgeGraph = require("./knowledge-graph")({
+  t: (key) => translate(key),
+  getPetWindowBounds,
+  getNearestWorkArea,
+  getTextScale: () => effectiveTextScaleForKey(
+    getWindowDisplayKey(_knowledgeGraph ? _knowledgeGraph.getWindow() : null) || getPetDisplayKey()
+  ),
+  iconPath: settingsWindowRuntime.getIconPath(),
+});
+
 // ── First-run onboarding tutorial ──
 // Buckets the installable agents for the tutorial's step 2. We call the
 // detector with skipDefaultIntegrations:false so the default integrations
@@ -2956,6 +2967,7 @@ const _menuCtx = {
   getUpdateMenuItem: () => getUpdateMenuItem(),
   openDashboard: () => showDashboard(),
   openCodaEval: () => _codaEval.showCodaEval(),
+  openKnowledgeGraph: () => _knowledgeGraph.showKnowledgeGraph(),
   launchClaudeSession: (mode, cwd, sessionId) => launchClaudeSession(mode, cwd, sessionId),
   newSessionWithFolder: async (t) => {
     const parent = win && !win.isDestroyed() ? win : null;
