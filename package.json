@@ -1,7 +1,7 @@
 {
   "name": "clawd-on-desk",
   "productName": "小哒 Coda",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "小哒 Coda — 替你把 AI 写的活儿盯到收尾的桌面小精灵。",
   "main": "src/main.js",
   "scripts": {
