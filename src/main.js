@@ -1493,6 +1493,51 @@ const { setState, applyState, updateSession, resolveDisplayState, getSvgOverride
         startStartupRecovery: _startStartupRecovery } = _state;
 const sessions = _state.sessions;
 
+// ── 一键展示所有状态 ──
+// 右键菜单触发：依次把主题里每个动画状态过一遍，每个停留几秒，看一轮完整的
+// 桌宠状态动画。展示期间临时进不打扰（冻结 session 状态机，避免真实 agent 活动
+// 打断轮播），结束后恢复原不打扰状态。
+const PLAY_ALL_SEQUENCE = [
+  "idle", "waking", "thinking", "working", "juggling",
+  "sweeping", "attention", "notification", "carrying", "error", "sleeping",
+];
+const PLAY_ALL_STEP_MS = 2600;
+let _playAllStatesRunning = false;
+let _playAllStatesTimer = null;
+let _playAllStatesPrevDnd = false;
+
+function stopPlayAllStates() {
+  if (_playAllStatesTimer) { clearTimeout(_playAllStatesTimer); _playAllStatesTimer = null; }
+  if (!_playAllStatesRunning) return;
+  _playAllStatesRunning = false;
+  // 恢复展示前的不打扰状态：原本不在不打扰就退出不打扰并回到真实状态
+  if (!_playAllStatesPrevDnd) {
+    try { disableDoNotDisturb(); } catch (_) {}
+  }
+  try {
+    const resolved = resolveDisplayState();
+    applyState(resolved, getSvgOverride(resolved));
+  } catch (_) {}
+}
+
+function playAllStates() {
+  if (_playAllStatesRunning) { stopPlayAllStates(); return; }
+  _playAllStatesRunning = true;
+  _playAllStatesPrevDnd = !!doNotDisturb;
+  // 冻结 session 状态机，避免真实 agent 活动打断轮播
+  if (!_playAllStatesPrevDnd) { try { enableDoNotDisturb(); } catch (_) {} }
+
+  let i = 0;
+  const step = () => {
+    if (!_playAllStatesRunning) return;
+    if (i >= PLAY_ALL_SEQUENCE.length) { stopPlayAllStates(); return; }
+    const st = PLAY_ALL_SEQUENCE[i++];
+    try { applyState(st, getSvgOverride(st)); } catch (_) {}
+    _playAllStatesTimer = setTimeout(step, PLAY_ALL_STEP_MS);
+  };
+  step();
+}
+
 // ── Keep-awake: block OS sleep while any agent task is in progress ──
 // State→in-progress mapping lives in state-session-snapshot.isSessionInProgress
 // (kept as a pure helper so the semantics are unit-tested).
@@ -2968,6 +3013,8 @@ const _menuCtx = {
   openDashboard: () => showDashboard(),
   openCodaEval: () => _codaEval.showCodaEval(),
   openKnowledgeGraph: () => _knowledgeGraph.showKnowledgeGraph(),
+  playAllStates: () => playAllStates(),
+  isPlayingAllStates: () => _playAllStatesRunning,
   launchClaudeSession: (mode, cwd, sessionId) => launchClaudeSession(mode, cwd, sessionId),
   newSessionWithFolder: async (t) => {
     const parent = win && !win.isDestroyed() ? win : null;

@@ -223,6 +223,13 @@ module.exports = function initMenu(ctx) {
           if (typeof ctx.openKnowledgeGraph === "function") ctx.openKnowledgeGraph();
         },
       },
+      {
+        // 一键展示所有状态：依次把每个桌宠动画状态过一遍（再次点击可中断）。
+        label: t("playAllStates"),
+        click: () => {
+          if (typeof ctx.playAllStates === "function") ctx.playAllStates();
+        },
+      },
       buildAutoApproveMenuItem(),
     ];
 
@@ -447,6 +454,13 @@ module.exports = function initMenu(ctx) {
         label: t("openKnowledgeGraph"),
         click: () => {
           if (typeof ctx.openKnowledgeGraph === "function") ctx.openKnowledgeGraph();
+        },
+      },
+      {
+        // 一键展示所有状态：依次把每个桌宠动画状态过一遍（再次点击可中断）。
+        label: t("playAllStates"),
+        click: () => {
+          if (typeof ctx.playAllStates === "function") ctx.playAllStates();
         },
       },
       {
